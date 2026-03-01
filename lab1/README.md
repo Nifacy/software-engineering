@@ -67,3 +67,17 @@
 - Получение записей на просотр объекта
 - Получение объектов пользователя
 - Изменения статуса объекта
+
+## Диаграммы
+
+### System Context View
+
+![System Context View Diagramm](images/system-context.svg)
+
+### Container View
+
+![System Context View Diagramm](images/container-context.svg)
+
+### Пример Use Case: Создание объекта недвижимости
+
+![System Context View Diagramm](images/dynamic-view.svg)
