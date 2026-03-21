@@ -14,6 +14,20 @@ if(NOT userver_FOUND)
     download_userver(TRY_DIR third_party/userver)
 endif()
 
+# Install jwt-cpp package
+find_package(jwt-cpp QUIET)
+if (NOT jwt-cpp_FOUND)
+    message("Loading JWT-CPP")
+    include(cmake/get_cpm.cmake)
+
+    CPMAddPackage(
+        NAME jwt-cpp
+        GITHUB_REPOSITORY Thalhammer/jwt-cpp
+        VERSION 0.7.2
+        OPTIONS "JWT_BUILD_EXAMPLES OFF" "JWT_BUILD_TESTS OFF" "JWT_CMAKE_FILES_INSTALL ON"
+    )
+endif()
+
 userver_setup_environment()
 
 # Common sources
@@ -21,28 +35,23 @@ include_directories(src)
 
 add_library(
     ${PROJECT_NAME}_objs OBJECT
-    src/greeting.cpp #
-    src/hello.cpp #
+    src/components/credentials_storage.cpp
+    src/handlers/register_handler.cpp
+    src/handlers/login_handler.cpp
+    src/auth/auth_checker.cpp
+    src/auth/auth_checker_factory.cpp
+    src/handlers/info_handler.cpp
 )
+
 target_link_libraries(
     ${PROJECT_NAME}_objs
-    PUBLIC userver::core #
+    PUBLIC userver::core
 )
 
 
 # The Service
 add_executable(${PROJECT_NAME} src/main.cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}_objs)
-
-# Unit Tests
-add_executable(${PROJECT_NAME}_unittest src/greeting_test.cpp)
-target_link_libraries(${PROJECT_NAME}_unittest PRIVATE ${PROJECT_NAME}_objs userver::utest)
-add_google_tests(${PROJECT_NAME}_unittest)
-
-# Benchmarks
-add_executable(${PROJECT_NAME}_benchmark src/greeting_benchmark.cpp)
-target_link_libraries(${PROJECT_NAME}_benchmark PRIVATE ${PROJECT_NAME}_objs userver::ubench)
-add_google_benchmark_tests(${PROJECT_NAME}_benchmark)
 
 # Functional testing
 userver_testsuite_add_simple()
