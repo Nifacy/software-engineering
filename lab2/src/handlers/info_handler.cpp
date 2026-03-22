@@ -18,7 +18,13 @@ std::string CredentialsInfoHandler::HandleRequestThrow(
   const auto user = user_storage_.GetUser(user_id);
 
   const api_gateway::schemas::user::UserInfo response_dom{
-      user.id, user.login, user.firstName, user.lastName};
+      .id = user.id,
+      .login = user.login,
+      .firstName = user.firstName,
+      .lastName = user.lastName,
+      .propertyIds = std::vector<std::string>(user.propertyIds.begin(),
+                                              user.propertyIds.end()),
+  };
 
   auto response_json =
       userver::formats::json::ValueBuilder{response_dom}.ExtractValue();

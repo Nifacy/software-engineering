@@ -37,9 +37,12 @@ std::string RegisterHandler::HandleRequestThrow(
     }
 
     const auto user_id = userver::utils::generators::GenerateUuid();
-    const components::user_storage::User user{user_id, request_body.login,
-                                              request_body.firstName,
-                                              request_body.lastName};
+    const components::user_storage::User user{
+        .id = user_id,
+        .login = request_body.login,
+        .firstName = request_body.firstName,
+        .lastName = request_body.lastName,
+        .propertyIds = std::unordered_set<std::string>()};
 
     user_storage_.CreateUser(user);
     credentials_storage_.AddCredentials(user.id);

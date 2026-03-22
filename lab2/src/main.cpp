@@ -14,7 +14,9 @@
 #include <userver/server/handlers/tests_control.hpp>
 #include <userver/testsuite/testsuite_support.hpp>
 #include <userver/utils/daemon_run.hpp>
+#include "components/property_storage.hpp"
 #include "components/user_storage.hpp"
+#include "handlers/create_property_handler.hpp"
 
 int main(int argc, char* argv[]) {
   userver::server::handlers::auth::RegisterAuthCheckerFactory<
@@ -28,11 +30,13 @@ int main(int argc, char* argv[]) {
           .Append<userver::server::handlers::TestsControl>()
           .Append<userver::congestion_control::Component>()
           .Append<components::user_storage::UserStorage>()
+          .Append<components::property_storage::PropertyStorage>()
           .Append<components::credentials_storage::CredentialsStorage>()
           .Append<handlers::register_handler::RegisterHandler>()
           .Append<handlers::login_handler::LoginHandler>()
           .Append<auth::AuthCheckerComponent>()
-          .Append<handlers::info_handler::CredentialsInfoHandler>();
+          .Append<handlers::info_handler::CredentialsInfoHandler>()
+          .Append<handlers::create_property_handler::CreatePropertyHandler>();
 
   return userver::utils::DaemonMain(argc, argv, component_list);
 }

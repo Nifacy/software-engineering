@@ -21,6 +21,14 @@ void UserStorage::CreateUser(const User& user) {
   users_.emplace(user.id, std::move(user));
 }
 
+void UserStorage::UpdateUser(const User& user) {
+  auto it = users_.find(user.id);
+  if (it == users_.end()) {
+    throw UserNotFound(user.id);
+  }
+  it->second = user;
+}
+
 User UserStorage::GetUser(const std::string& user_id) const {
   auto it = users_.find(user_id);
   if (it == users_.end()) {

@@ -2,15 +2,17 @@
 
 #include <stdexcept>
 #include <string>
+#include <unordered_set>
 #include <userver/components/component_base.hpp>
 
 namespace components::user_storage {
 
 struct User {
-  std::string id;
+  std::string id;  // TODO: Remove ID from document
   std::string login;
   std::string firstName;
   std::string lastName;
+  std::unordered_set<std::string> propertyIds;
 };
 
 class UserAlreadyExistsException : public std::runtime_error {
@@ -31,6 +33,8 @@ class UserStorage final : public userver::components::ComponentBase {
                        const userver::components::ComponentContext& context);
 
   void CreateUser(const User& user);
+
+  void UpdateUser(const User& user);
 
   User GetUser(const std::string& user_id) const;
 

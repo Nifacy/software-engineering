@@ -16,8 +16,14 @@ components:
         lastName:
           type: string
           minLength: 1
+        propertyIds:
+          type: array
+          items:
+            type: string
+            minLength: 1
       required:
       - id
       - login
       - firstName
       - lastName
+      - propertyIds

@@ -56,6 +56,9 @@ components_manager:
         auth-checker:
             load-enabled: true
 
+        property-storage:
+            load-enabled: true
+
         # HTTP endpoint handlers
 
         register-handler:
@@ -69,6 +72,13 @@ components_manager:
         info-handler:
             path: /info
             method: GET
+            auth:
+                types:
+                - simple-auth
+
+        create-property-handler:
+            path: /properties
+            method: POST
             auth:
                 types:
                 - simple-auth
