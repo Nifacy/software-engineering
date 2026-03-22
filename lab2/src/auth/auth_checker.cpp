@@ -33,7 +33,7 @@ AuthChecker::AuthCheckResult AuthChecker::CheckAuth(
 
   // TODO: don't copy string here
   if (credentials_storage_.HasCredentials(token)) {
-    request_context.SetData("credentials", token);
+    request_context.SetData("user_id", token);
     return AuthChecker::AuthCheckResult{};
   }
 

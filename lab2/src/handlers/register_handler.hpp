@@ -2,6 +2,7 @@
 
 #include <userver/server/handlers/http_handler_base.hpp>
 #include "components/credentials_storage.hpp"
+#include "components/user_storage.hpp"
 
 namespace handlers::register_handler {
 
@@ -18,7 +19,8 @@ class RegisterHandler final
       userver::server::request::RequestContext&) const override;
 
  private:
-  components::credentials_storage::CredentialsStorage& storage_;
+  components::credentials_storage::CredentialsStorage& credentials_storage_;
+  components::user_storage::UserStorage& user_storage_;
 };
 
 }  // namespace handlers::register_handler

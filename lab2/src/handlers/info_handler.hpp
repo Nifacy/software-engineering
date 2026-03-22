@@ -1,5 +1,6 @@
 #pragma once
 
+#include <components/user_storage.hpp>
 #include <userver/server/handlers/http_handler_base.hpp>
 
 namespace handlers::info_handler {
@@ -15,6 +16,9 @@ class CredentialsInfoHandler final
   std::string HandleRequestThrow(
       const userver::server::http::HttpRequest&,
       userver::server::request::RequestContext&) const override;
+
+ private:
+  components::user_storage::UserStorage& user_storage_;
 };
 
 }  // namespace handlers::info_handler

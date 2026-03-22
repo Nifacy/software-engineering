@@ -50,6 +50,9 @@ components_manager:
         credentials-storage:
             load-enabled: true
 
+        user-storage:
+            load-enabled: true
+
         auth-checker:
             load-enabled: true
 

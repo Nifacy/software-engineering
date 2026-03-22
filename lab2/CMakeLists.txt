@@ -6,7 +6,7 @@ include(DownloadUserver)
 
 find_package(
     userver
-    COMPONENTS core #
+    COMPONENTS core chaotic#
     QUIET
 )
 if(NOT userver_FOUND)
@@ -36,6 +36,7 @@ include_directories(src)
 add_library(
     ${PROJECT_NAME}_objs OBJECT
     src/components/credentials_storage.cpp
+    src/components/user_storage.cpp
     src/handlers/register_handler.cpp
     src/handlers/login_handler.cpp
     src/auth/auth_checker.cpp
@@ -47,6 +48,22 @@ target_link_libraries(
     ${PROJECT_NAME}_objs
     PUBLIC userver::core
 )
+
+
+# Generate schema C++ types
+
+file(GLOB_RECURSE SCHEMAS ${CMAKE_CURRENT_SOURCE_DIR}/schemas/*.yaml)
+userver_target_generate_chaotic(
+    ${PROJECT_NAME}-chgen
+    # Generate serializers for responses
+    GENERATE_SERIALIZERS
+    # Map '/components/schemas/*' JSONSchema types to C++ types in 'api_gateway::schemas::STEM' namespace
+    LAYOUT "/components/schemas/([^/]*)/=api_gateway::schemas::{stem}::{0}"
+    OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/src
+    SCHEMAS ${SCHEMAS}
+    RELATIVE_TO ${CMAKE_CURRENT_SOURCE_DIR}
+)
+target_link_libraries(${PROJECT_NAME}_objs PRIVATE ${PROJECT_NAME}-chgen)
 
 
 # The Service

@@ -14,6 +14,7 @@
 #include <userver/server/handlers/tests_control.hpp>
 #include <userver/testsuite/testsuite_support.hpp>
 #include <userver/utils/daemon_run.hpp>
+#include "components/user_storage.hpp"
 
 int main(int argc, char* argv[]) {
   userver::server::handlers::auth::RegisterAuthCheckerFactory<
@@ -26,6 +27,7 @@ int main(int argc, char* argv[]) {
           .Append<userver::clients::dns::Component>()
           .Append<userver::server::handlers::TestsControl>()
           .Append<userver::congestion_control::Component>()
+          .Append<components::user_storage::UserStorage>()
           .Append<components::credentials_storage::CredentialsStorage>()
           .Append<handlers::register_handler::RegisterHandler>()
           .Append<handlers::login_handler::LoginHandler>()
