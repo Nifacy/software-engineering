@@ -52,6 +52,7 @@ std::string CreatePropertyHandler::HandleRequestThrow(
               .apartment = (unsigned int)request_body.address.apartment,
           },
       .status = components::property_storage::PropertyStatus::Active,
+      .price = request_body.price,
   };
 
   property_storage_.CreateProperty(property_id, new_property);
@@ -72,6 +73,7 @@ std::string CreatePropertyHandler::HandleRequestThrow(
           },
       .ownerId = user_id,
       .status = GetPropertyStatus(new_property.status),
+      .price = new_property.price,
   };
 
   request.SetResponseStatus(userver::server::http::HttpStatus::Created);

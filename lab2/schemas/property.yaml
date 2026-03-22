@@ -6,8 +6,12 @@ components:
       properties:
         address:
           $ref: "./common.yaml#/components/schemas/Address"
+        price:
+          type: integer
+          minimum: 1
       required:
       - address
+      - price
 
     Property:
       type: object
@@ -24,8 +28,12 @@ components:
         status:
           type: string
           enum: [ "active", "sold" ]
+        price:
+          type: integer
+          minimum: 1
       required:
       - id
       - address
       - ownerId
       - status
+      - price

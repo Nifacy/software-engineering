@@ -20,6 +20,7 @@ struct Property {
   std::string owner_id;
   Address address;
   PropertyStatus status;
+  int price;
 };
 
 class PropertyAlreadyExists : public std::runtime_error {
