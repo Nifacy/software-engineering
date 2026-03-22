@@ -27,3 +27,15 @@ components:
       - firstName
       - lastName
       - propertyIds
+
+    UserIds:
+      type: object
+      additionalProperties: false
+      properties:
+        userIds:
+          type: array
+          items:
+            type: string
+            minLength: 1
+      required:
+      - userIds

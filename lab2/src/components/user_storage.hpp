@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <unordered_set>
@@ -35,6 +36,11 @@ class UserStorage final : public userver::components::ComponentBase {
   void CreateUser(const User& user);
 
   void UpdateUser(const User& user);
+
+  std::vector<std::string> FindUsers(
+      const std::optional<std::string>& login_pattern,
+      const std::optional<std::string>& first_name_pattern,
+      const std::optional<std::string>& last_name_pattern) const;
 
   User GetUser(const std::string& user_id) const;
 

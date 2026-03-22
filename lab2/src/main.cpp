@@ -1,6 +1,7 @@
 #include <auth/auth_checker_factory.hpp>
 #include <components/credentials_storage.hpp>
 #include <components/viewing_storage.hpp>
+#include <handlers/find_users_handler.hpp>
 #include <handlers/info_handler.hpp>
 #include <handlers/login_handler.hpp>
 #include <handlers/register_handler.hpp>
@@ -38,7 +39,8 @@ int main(int argc, char* argv[]) {
           .Append<handlers::login_handler::LoginHandler>()
           .Append<auth::AuthCheckerComponent>()
           .Append<handlers::info_handler::CredentialsInfoHandler>()
-          .Append<handlers::create_property_handler::CreatePropertyHandler>();
+          .Append<handlers::create_property_handler::CreatePropertyHandler>()
+          .Append<handlers::find_users_handler::FindUsersHandler>();
 
   return userver::utils::DaemonMain(argc, argv, component_list);
 }
