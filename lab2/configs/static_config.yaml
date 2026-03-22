@@ -59,6 +59,9 @@ components_manager:
         property-storage:
             load-enabled: true
 
+        viewing-storage:
+            load-enabled: true
+
         # HTTP endpoint handlers
 
         register-handler:

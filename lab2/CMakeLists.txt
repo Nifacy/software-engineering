@@ -38,6 +38,7 @@ add_library(
     src/components/credentials_storage.cpp
     src/components/user_storage.cpp
     src/components/property_storage.cpp
+    src/components/viewing_storage.cpp
     src/handlers/register_handler.cpp
     src/handlers/login_handler.cpp
     src/auth/auth_checker.cpp

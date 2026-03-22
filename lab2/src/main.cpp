@@ -1,5 +1,6 @@
 #include <auth/auth_checker_factory.hpp>
 #include <components/credentials_storage.hpp>
+#include <components/viewing_storage.hpp>
 #include <handlers/info_handler.hpp>
 #include <handlers/login_handler.hpp>
 #include <handlers/register_handler.hpp>
@@ -32,6 +33,7 @@ int main(int argc, char* argv[]) {
           .Append<components::user_storage::UserStorage>()
           .Append<components::property_storage::PropertyStorage>()
           .Append<components::credentials_storage::CredentialsStorage>()
+          .Append<components::viewing_storage::ViewingStorage>()
           .Append<handlers::register_handler::RegisterHandler>()
           .Append<handlers::login_handler::LoginHandler>()
           .Append<auth::AuthCheckerComponent>()
