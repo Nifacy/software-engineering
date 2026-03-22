@@ -1,17 +1,17 @@
-#include <handlers/info_handler.hpp>
+#include <handlers/get_current_user_handler.hpp>
 #include <schemas/user.hpp>
 #include <userver/components/component_context.hpp>
 
-namespace handlers::info_handler {
+namespace handlers::get_current_user_handler {
 
-CredentialsInfoHandler::CredentialsInfoHandler(
+GetCurrentUserHandler::GetCurrentUserHandler(
     const userver::components::ComponentConfig& config,
     const userver::components::ComponentContext& context)
     : HttpHandlerBase(config, context),
       user_storage_(
           context.FindComponent<components::user_storage::UserStorage>()) {}
 
-std::string CredentialsInfoHandler::HandleRequestThrow(
+std::string GetCurrentUserHandler::HandleRequestThrow(
     const userver::server::http::HttpRequest& /* request */,
     userver::server::request::RequestContext& request_context) const {
   const auto user_id = request_context.GetData<std::string>("user_id");
@@ -22,8 +22,6 @@ std::string CredentialsInfoHandler::HandleRequestThrow(
       .login = user.login,
       .firstName = user.firstName,
       .lastName = user.lastName,
-      .propertyIds = std::vector<std::string>(user.propertyIds.begin(),
-                                              user.propertyIds.end()),
   };
 
   auto response_json =
@@ -31,4 +29,4 @@ std::string CredentialsInfoHandler::HandleRequestThrow(
   return userver::formats::json::ToString(response_json);
 }
 
-}  // namespace handlers::info_handler
+}  // namespace handlers::get_current_user_handler

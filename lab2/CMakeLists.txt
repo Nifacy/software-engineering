@@ -43,9 +43,10 @@ add_library(
     src/handlers/login_handler.cpp
     src/auth/auth_checker.cpp
     src/auth/auth_checker_factory.cpp
-    src/handlers/info_handler.cpp
+    src/handlers/get_current_user_handler.cpp
     src/handlers/create_property_handler.cpp
     src/handlers/find_users_handler.cpp
+    src/handlers/get_user_handler.cpp
 )
 
 target_link_libraries(

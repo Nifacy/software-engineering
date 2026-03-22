@@ -3,15 +3,15 @@
 #include <components/user_storage.hpp>
 #include <userver/server/handlers/http_handler_base.hpp>
 
-namespace handlers::info_handler {
+namespace handlers::get_current_user_handler {
 
-class CredentialsInfoHandler final
+class GetCurrentUserHandler final
     : public userver::server::handlers::HttpHandlerBase {
  public:
-  static constexpr std::string_view kName = "info-handler";
+  static constexpr std::string_view kName = "get-current-user-handler";
 
-  CredentialsInfoHandler(const userver::components::ComponentConfig& config,
-                         const userver::components::ComponentContext& context);
+  GetCurrentUserHandler(const userver::components::ComponentConfig& config,
+                        const userver::components::ComponentContext& context);
 
   std::string HandleRequestThrow(
       const userver::server::http::HttpRequest&,
@@ -21,4 +21,4 @@ class CredentialsInfoHandler final
   components::user_storage::UserStorage& user_storage_;
 };
 
-}  // namespace handlers::info_handler
+}  // namespace handlers::get_current_user_handler

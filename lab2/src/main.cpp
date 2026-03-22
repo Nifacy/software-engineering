@@ -2,7 +2,8 @@
 #include <components/credentials_storage.hpp>
 #include <components/viewing_storage.hpp>
 #include <handlers/find_users_handler.hpp>
-#include <handlers/info_handler.hpp>
+#include <handlers/get_current_user_handler.hpp>
+#include <handlers/get_user_handler.hpp>
 #include <handlers/login_handler.hpp>
 #include <handlers/register_handler.hpp>
 #include <userver/clients/dns/component.hpp>
@@ -38,9 +39,10 @@ int main(int argc, char* argv[]) {
           .Append<handlers::register_handler::RegisterHandler>()
           .Append<handlers::login_handler::LoginHandler>()
           .Append<auth::AuthCheckerComponent>()
-          .Append<handlers::info_handler::CredentialsInfoHandler>()
+          .Append<handlers::get_current_user_handler::GetCurrentUserHandler>()
           .Append<handlers::create_property_handler::CreatePropertyHandler>()
-          .Append<handlers::find_users_handler::FindUsersHandler>();
+          .Append<handlers::find_users_handler::FindUsersHandler>()
+          .Append<handlers::get_user_handler::GetUserHandler>();
 
   return userver::utils::DaemonMain(argc, argv, component_list);
 }
