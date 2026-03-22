@@ -72,13 +72,6 @@ components_manager:
             path: /login
             method: POST
 
-        create-property-handler:
-            path: /properties
-            method: POST
-            auth:
-                types:
-                - simple-auth
-
         find-users-handler:
             path: /users
             method: GET
@@ -93,3 +86,14 @@ components_manager:
             auth:
                 types:
                 - simple-auth
+
+        create-property-handler:
+            path: /properties
+            method: POST
+            auth:
+                types:
+                - simple-auth
+
+        find-properties-handler:
+            path: /properties
+            method: GET

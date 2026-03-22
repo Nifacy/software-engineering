@@ -37,3 +37,15 @@ components:
       - ownerId
       - status
       - price
+
+    FindPropertiesResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        propertyIds:
+          type: array
+          items:
+            type: string
+            minLength: 1
+      required:
+      - propertyIds

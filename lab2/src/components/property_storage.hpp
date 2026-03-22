@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <userver/components/component_base.hpp>
@@ -46,6 +47,10 @@ class PropertyStorage final : public userver::components::ComponentBase {
   void UpdateProperty(const std::string& property_id, const Property& property);
 
   Property GetProperty(const std::string& property_id) const;
+
+  std::vector<std::string> FindProperties(
+      const std::optional<std::string>& city_pattern,
+      const std::optional<int>& min_price, const std::optional<int>& max_price);
 
  private:
   std::unordered_map<std::string, Property> storage_;
