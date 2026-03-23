@@ -1,6 +1,7 @@
 #include <auth/auth_checker_factory.hpp>
 #include <components/credentials_storage.hpp>
 #include <components/viewing_storage.hpp>
+#include <handlers/delete_viewing_handler.hpp>
 #include <handlers/find_properties_handler.hpp>
 #include <handlers/find_users_handler.hpp>
 #include <handlers/get_current_user_handler.hpp>
@@ -48,7 +49,8 @@ int main(int argc, char* argv[]) {
           .Append<handlers::get_user_handler::GetUserHandler>()
           .Append<handlers::find_properties_handler::FindPropertiesHandler>()
           .Append<handlers::get_property_handler::GetPropertyHandler>()
-          .Append<handlers::schedule_viewing_handler::ScheduleViewingHandler>();
+          .Append<handlers::schedule_viewing_handler::ScheduleViewingHandler>()
+          .Append<handlers::delete_viewing_handler::DeleteViewingHandler>();
 
   return userver::utils::DaemonMain(argc, argv, component_list);
 }

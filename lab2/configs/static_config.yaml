@@ -108,3 +108,10 @@ components_manager:
             auth:
                 types:
                 - simple-auth
+
+        delete-viewing-handler:
+            path: /properties/{property_id}/viewings/{viewing_id}
+            method: DELETE
+            auth:
+                types:
+                - simple-auth
