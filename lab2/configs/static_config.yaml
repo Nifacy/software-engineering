@@ -101,3 +101,10 @@ components_manager:
         get-property-handler:
             path: /properties/{id}
             method: GET
+
+        schedule-viewing-handler:
+            path: /properties/{id}/viewings
+            method: POST
+            auth:
+                types:
+                - simple-auth

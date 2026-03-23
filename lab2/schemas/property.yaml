@@ -38,6 +38,34 @@ components:
       - status
       - price
 
+    PropertyViewing:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          minLength: 1
+        user_id:
+          type: string
+          minLength: 1
+        date:
+          type: string
+          format: date
+      required:
+      - id
+      - user_id
+      - date
+
+    ScheduleViewingRequestBody:
+      type: object
+      additionalProperties: false
+      properties:
+        date:
+          type: string
+          format: date
+      required:
+      - date
+
     FindPropertiesResponse:
       type: object
       additionalProperties: false

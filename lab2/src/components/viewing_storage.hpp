@@ -7,13 +7,8 @@
 
 namespace components::viewing_storage {
 
-struct Date {
-  int year;
-  int month;
-  int day;
-
-  bool operator==(const Date& other) const;
-};
+/// String in YYYY-MM-DD format
+using Date = std::string;
 
 struct Viewing {
   std::string user_id;

@@ -2,11 +2,6 @@
 
 namespace components::viewing_storage {
 
-bool Date::operator==(const Date& other) const {
-  return this->year == other.year && this->month == other.month &&
-         this->day == other.day;
-}
-
 ViewingAlreadyExists::ViewingAlreadyExists(const std::string& viewing_id)
     : std::runtime_error("Viewing with ID '" + viewing_id +
                          "' already exists") {}

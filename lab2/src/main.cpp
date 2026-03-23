@@ -8,6 +8,7 @@
 #include <handlers/get_user_handler.hpp>
 #include <handlers/login_handler.hpp>
 #include <handlers/register_handler.hpp>
+#include <handlers/schedule_viewing_handler.hpp>
 #include <userver/clients/dns/component.hpp>
 #include <userver/clients/http/component_list.hpp>
 #include <userver/components/component.hpp>
@@ -46,7 +47,8 @@ int main(int argc, char* argv[]) {
           .Append<handlers::find_users_handler::FindUsersHandler>()
           .Append<handlers::get_user_handler::GetUserHandler>()
           .Append<handlers::find_properties_handler::FindPropertiesHandler>()
-          .Append<handlers::get_property_handler::GetPropertyHandler>();
+          .Append<handlers::get_property_handler::GetPropertyHandler>()
+          .Append<handlers::schedule_viewing_handler::ScheduleViewingHandler>();
 
   return userver::utils::DaemonMain(argc, argv, component_list);
 }
