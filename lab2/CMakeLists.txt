@@ -48,6 +48,7 @@ add_library(
     src/handlers/find_users_handler.cpp
     src/handlers/get_user_handler.cpp
     src/handlers/find_properties_handler.cpp
+    src/handlers/get_property_handler.cpp
 )
 
 target_link_libraries(

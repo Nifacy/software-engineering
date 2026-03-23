@@ -4,6 +4,7 @@
 #include <handlers/find_properties_handler.hpp>
 #include <handlers/find_users_handler.hpp>
 #include <handlers/get_current_user_handler.hpp>
+#include <handlers/get_property_handler.hpp>
 #include <handlers/get_user_handler.hpp>
 #include <handlers/login_handler.hpp>
 #include <handlers/register_handler.hpp>
@@ -44,7 +45,8 @@ int main(int argc, char* argv[]) {
           .Append<handlers::create_property_handler::CreatePropertyHandler>()
           .Append<handlers::find_users_handler::FindUsersHandler>()
           .Append<handlers::get_user_handler::GetUserHandler>()
-          .Append<handlers::find_properties_handler::FindPropertiesHandler>();
+          .Append<handlers::find_properties_handler::FindPropertiesHandler>()
+          .Append<handlers::get_property_handler::GetPropertyHandler>();
 
   return userver::utils::DaemonMain(argc, argv, component_list);
 }

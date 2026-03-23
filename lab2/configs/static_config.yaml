@@ -97,3 +97,7 @@ components_manager:
         find-properties-handler:
             path: /properties
             method: GET
+
+        get-property-handler:
+            path: /properties/{id}
+            method: GET
