@@ -77,3 +77,13 @@ components:
             minLength: 1
       required:
       - propertyIds
+
+    PropertyViewingList:
+      type: object
+      properties:
+        viewings:
+          type: array
+          items:
+            $ref: "#/components/schemas/PropertyViewing"
+      required:
+      - viewings

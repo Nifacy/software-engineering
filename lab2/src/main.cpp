@@ -6,6 +6,7 @@
 #include <handlers/find_users_handler.hpp>
 #include <handlers/get_current_user_handler.hpp>
 #include <handlers/get_property_handler.hpp>
+#include <handlers/get_property_viewings_handler.hpp>
 #include <handlers/get_user_handler.hpp>
 #include <handlers/login_handler.hpp>
 #include <handlers/register_handler.hpp>
@@ -50,7 +51,9 @@ int main(int argc, char* argv[]) {
           .Append<handlers::find_properties_handler::FindPropertiesHandler>()
           .Append<handlers::get_property_handler::GetPropertyHandler>()
           .Append<handlers::schedule_viewing_handler::ScheduleViewingHandler>()
-          .Append<handlers::delete_viewing_handler::DeleteViewingHandler>();
+          .Append<handlers::delete_viewing_handler::DeleteViewingHandler>()
+          .Append<handlers::get_property_viewings_handler::
+                      GetPropertyViewingsHandler>();
 
   return userver::utils::DaemonMain(argc, argv, component_list);
 }
