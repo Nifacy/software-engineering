@@ -33,3 +33,32 @@ components:
             minLength: 1
       required:
       - userIds
+
+    UserViewing:
+      type: object
+      additionalProperties: false
+      properties:
+        propertyId:
+          type: string
+          minLength: 1
+        id:
+          type: string
+          minLength: 1
+        date:
+          type: string
+          format: date
+      required:
+      - id
+      - propertyId
+      - date
+
+    UserViewingList:
+      type: object
+      additionalProperties: false
+      properties:
+        viewings:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserViewing'
+      required:
+      - viewings

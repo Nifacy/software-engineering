@@ -52,6 +52,7 @@ add_library(
     src/handlers/schedule_viewing_handler.cpp
     src/handlers/delete_viewing_handler.cpp
     src/handlers/get_property_viewings_handler.cpp
+    src/handlers/get_user_viewings_handler.cpp
 )
 
 target_link_libraries(

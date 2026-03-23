@@ -119,3 +119,10 @@ components_manager:
         get-property-viewings-handler:
             path: /properties/{id}/viewings
             method: GET
+
+        get-user-viewings-handler:
+            path: /users/me/viewings
+            method: GET
+            auth:
+                types:
+                - simple-auth
