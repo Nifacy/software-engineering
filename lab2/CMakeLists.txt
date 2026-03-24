@@ -54,6 +54,7 @@ add_library(
     src/handlers/get_property_viewings_handler.cpp
     src/handlers/get_user_viewings_handler.cpp
     src/handlers/update_property_handler.cpp
+    src/handlers/get_user_properties_handler.cpp
 )
 
 target_link_libraries(

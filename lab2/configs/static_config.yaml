@@ -133,3 +133,10 @@ components_manager:
             auth:
                 types:
                 - simple-auth
+
+        get-user-properties-handler:
+            path: /users/me/properties
+            method: GET
+            auth:
+                types:
+                - simple-auth

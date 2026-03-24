@@ -43,7 +43,8 @@ Property PropertyStorage::GetProperty(const std::string& property_id) const {
 
 std::vector<std::string> PropertyStorage::FindProperties(
     const std::optional<std::string>& city_pattern,
-    const std::optional<int>& min_price, const std::optional<int>& max_price) {
+    const std::optional<int>& min_price, const std::optional<int>& max_price,
+    const std::optional<std::string>& owner_id) {
   std::vector<std::string> result;
 
   for (const auto& [id, property] : storage_) {
@@ -57,7 +58,10 @@ std::vector<std::string> PropertyStorage::FindProperties(
     bool match_max_price =
         !max_price.has_value() || (property.price <= *max_price);
 
-    if (match_city && match_min_price && match_max_price) {
+    bool match_owner_id =
+        !owner_id.has_value() || (property.owner_id == *owner_id);
+
+    if (match_city && match_min_price && match_max_price && match_owner_id) {
       result.push_back(id);
     }
   }

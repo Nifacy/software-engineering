@@ -8,6 +8,7 @@
 #include <handlers/get_property_handler.hpp>
 #include <handlers/get_property_viewings_handler.hpp>
 #include <handlers/get_user_handler.hpp>
+#include <handlers/get_user_properties_handler.hpp>
 #include <handlers/get_user_viewings_handler.hpp>
 #include <handlers/login_handler.hpp>
 #include <handlers/register_handler.hpp>
@@ -57,7 +58,9 @@ int main(int argc, char* argv[]) {
           .Append<handlers::get_property_viewings_handler::
                       GetPropertyViewingsHandler>()
           .Append<handlers::get_user_viewings_handler::GetUserViewingsHandler>()
-          .Append<handlers::update_property_handler::UpdatePropertyHandler>();
+          .Append<handlers::update_property_handler::UpdatePropertyHandler>()
+          .Append<handlers::get_user_properties_handler::
+                      GetUserPropertiesHandler>();
 
   return userver::utils::DaemonMain(argc, argv, component_list);
 }

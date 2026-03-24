@@ -62,3 +62,34 @@ components:
             $ref: '#/components/schemas/UserViewing'
       required:
       - viewings
+
+    UserProperty:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          minLength: 1
+        address:
+          $ref: "./common.yaml#/components/schemas/Address"
+        status:
+          $ref: "./property.yaml#/components/schemas/PropertyStatus"
+        price:
+          type: integer
+          minimum: 1
+      required:
+      - id
+      - address
+      - status
+      - price
+
+    UserPropertyList:
+      type: object
+      additionalProperties: false
+      properties:
+        properties:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserProperty"
+      required:
+      - properties

@@ -50,7 +50,8 @@ class PropertyStorage final : public userver::components::ComponentBase {
 
   std::vector<std::string> FindProperties(
       const std::optional<std::string>& city_pattern,
-      const std::optional<int>& min_price, const std::optional<int>& max_price);
+      const std::optional<int>& min_price, const std::optional<int>& max_price,
+      const std::optional<std::string>& owner_id);
 
  private:
   std::unordered_map<std::string, Property> storage_;

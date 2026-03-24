@@ -58,7 +58,7 @@ std::string FindPropertiesHandler::HandleRequestThrow(
     const auto property_ids = property_storage_.FindProperties(
         TryGetFilterValue(request, "city"),
         TryGetIntegerFilterValue(request, "minPrice"),
-        TryGetIntegerFilterValue(request, "maxPrice"));
+        TryGetIntegerFilterValue(request, "maxPrice"), std::nullopt);
 
     const api_gateway::schemas::property::FindPropertiesResponse response_dom{
         .propertyIds = property_ids};
