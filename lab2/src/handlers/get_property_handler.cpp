@@ -14,13 +14,13 @@ GetPropertyHandler::GetPropertyHandler(
 }
 
 // TODO: move in common part to remove repeats
-api_gateway::schemas::property::Property::Status GetPropertyStatus(
+api_gateway::schemas::property::PropertyStatus GetPropertyStatus(
     const components::property_storage::PropertyStatus& status) {
   switch (status) {
     case components::property_storage::PropertyStatus::Active:
-      return api_gateway::schemas::property::Property::Status::kActive;
+      return api_gateway::schemas::property::PropertyStatus::kActive;
     case components::property_storage::PropertyStatus::Sold:
-      return api_gateway::schemas::property::Property::Status::kSold;
+      return api_gateway::schemas::property::PropertyStatus::kSold;
   }
 }
 

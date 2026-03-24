@@ -1,5 +1,5 @@
 curl -v -X POST http://localhost:8080/register -d '{"login": "foo", "password": "pass123", "firstName": "Bob", "lastName": "Smith"}'
-curl -H 'Authorization: Bearer %TOKEN%' -X POST http://localhost:8080/properties -d '{"address": {"country": "Russia", "city": "Moscow", "street": "Sedova", "building": 23, "apartment": 23}, "price": 100}'
+curl -H 'Authorization: Bearer $TOKEN' -X POST http://localhost:8080/properties -d '{"address": {"country": "Russia", "city": "Moscow", "street": "Sedova", "building": 23, "apartment": 23}, "price": 100}'
 curl http://localhost:8080/properties?minPrice=foo
 curl http://localhost:8080/properties?maxPrice=20
 curl http://localhost:8080/properties?city=Mos

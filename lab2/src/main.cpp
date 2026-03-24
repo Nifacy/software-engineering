@@ -12,6 +12,7 @@
 #include <handlers/login_handler.hpp>
 #include <handlers/register_handler.hpp>
 #include <handlers/schedule_viewing_handler.hpp>
+#include <handlers/update_property_handler.hpp>
 #include <userver/clients/dns/component.hpp>
 #include <userver/clients/http/component_list.hpp>
 #include <userver/components/component.hpp>
@@ -55,8 +56,8 @@ int main(int argc, char* argv[]) {
           .Append<handlers::delete_viewing_handler::DeleteViewingHandler>()
           .Append<handlers::get_property_viewings_handler::
                       GetPropertyViewingsHandler>()
-          .Append<
-              handlers::get_user_viewings_handler::GetUserViewingsHandler>();
+          .Append<handlers::get_user_viewings_handler::GetUserViewingsHandler>()
+          .Append<handlers::update_property_handler::UpdatePropertyHandler>();
 
   return userver::utils::DaemonMain(argc, argv, component_list);
 }

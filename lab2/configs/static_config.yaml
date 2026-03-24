@@ -126,3 +126,10 @@ components_manager:
             auth:
                 types:
                 - simple-auth
+
+        update-property-handler:
+            path: /properties/{id}
+            method: PATCH
+            auth:
+                types:
+                - simple-auth

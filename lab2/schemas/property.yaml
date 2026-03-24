@@ -1,5 +1,9 @@
 components:
   schemas:
+    PropertyStatus:
+      type: string
+      enum: [ "active", "sold" ]
+
     CreatePropertyRequestBody:
       type: object
       additionalProperties: false
@@ -26,8 +30,7 @@ components:
           type: string
           minLength: 1
         status:
-          type: string
-          enum: [ "active", "sold" ]
+          $ref: "#/components/schemas/PropertyStatus"
         price:
           type: integer
           minimum: 1
@@ -80,6 +83,7 @@ components:
 
     PropertyViewingList:
       type: object
+      additionalProperties: false
       properties:
         viewings:
           type: array
@@ -87,3 +91,13 @@ components:
             $ref: "#/components/schemas/PropertyViewing"
       required:
       - viewings
+
+    UpdatePropertyRequestBody:
+      type: object
+      additionalProperties: false
+      properties:
+        status:
+          $ref: "#/components/schemas/PropertyStatus"
+        price:
+          type: integer
+          minimum: 1
