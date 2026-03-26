@@ -1,0 +1,18 @@
+create_property_handler
+get_property_handler
+update_property_handler
+get_user_properties
+find_properties
+
+register_handler
+login_handler
+
+--- TODO ---
+
+delete_viewing_handler.hpp
+find_users_handler.hpp
+get_current_user_handler.hpp
+get_property_viewings_handler.hpp
+get_user_handler.hpp
+get_user_viewings_handler.hpp
+schedule_viewing_handler.hpp

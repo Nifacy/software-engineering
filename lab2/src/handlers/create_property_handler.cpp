@@ -45,7 +45,7 @@ std::string CreatePropertyHandler::HandleRequestThrow(
       .owner_id = user_id,
       .address =
           {
-              .country = request_body.address.city,
+              .country = request_body.address.country,
               .city = request_body.address.city,
               .street = request_body.address.street,
               .building = (unsigned int)request_body.address.building,
@@ -65,7 +65,7 @@ std::string CreatePropertyHandler::HandleRequestThrow(
       .id = property_id,
       .address =
           {
-              .country = new_property.address.city,
+              .country = new_property.address.country,
               .city = new_property.address.city,
               .street = new_property.address.street,
               .building = (std::int32_t)new_property.address.building,
