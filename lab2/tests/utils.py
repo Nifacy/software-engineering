@@ -46,7 +46,8 @@ def get_property_update_payload(status: PropertyStatus) -> dict[str, str]:
     return {'status': status}
 
 
-def get_schedule_viewing_payload(date: datetime.date) -> dict[str, str]:
+def get_schedule_viewing_payload(date: datetime.date | None = None) -> dict[str, str]:
+    date = date or datetime.date(year=2024, month=2, day=20)
     return {'date': date.strftime('%Y-%m-%d')}
 
 
@@ -69,7 +70,10 @@ async def create_user(service_client: pytest_userver.client.Client, payload: dic
     return token, response.json()['id']
 
 
-async def create_property(service_client: pytest_userver.client.Client, token: str, payload: dict[str, Any] | None = None) -> dict[str, Any]:
+async def create_property(service_client: pytest_userver.client.Client, token: str | None = None, payload: dict[str, Any] | None = None) -> dict[str, Any]:
+    if token is None:
+        token, _ = await create_user(service_client)
+
     creation_payload = payload or get_property_creation_payload()
     response = await service_client.post('/properties', json=creation_payload, headers=get_auth_headers(token))
     assert response.status == 201
@@ -83,7 +87,7 @@ async def update_property(service_client: pytest_userver.client.Client, token: s
 
 
 async def schedule_viewing(service_client: pytest_userver.client.Client, token: str, property_id: str, payload: dict[str, Any] | None = None) -> str:
-    payload = payload or get_schedule_viewing_payload(datetime.date(year=2026, month=2, day=24))
+    payload = payload or get_schedule_viewing_payload(datetime.date(year=2026, month=2, day=24) + datetime.timedelta(days=random.randint(1, 1_000)))
     response = await service_client.post(f'/properties/{property_id}/viewings', json=payload, headers=get_auth_headers(token))
     assert response.status == 201
     return response.json()['id']
