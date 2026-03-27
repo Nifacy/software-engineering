@@ -65,6 +65,7 @@ UpdatePropertyHandler::UpdatePropertyHandler(
               .FindComponent<components::property_storage::PropertyStorage>()) {
 }
 
+// FIXME: This method returns 500 status code on request validation error
 std::string UpdatePropertyHandler::HandleRequestThrow(
     const userver::server::http::HttpRequest& request,
     userver::server::request::RequestContext& request_context) const {

@@ -1,21 +1,9 @@
 from typing import Any
 from unittest.mock import ANY
 import pytest_userver.client
-import uuid
 import pytest
 
-
-def _get_creation_payload(price: int | None = None, city: str | None = None):
-    return {
-        'address': {
-            'country': 'Russia',
-            'city': city or 'Moscow',
-            'street': 'Babushkinskaya',
-            'building': 1,
-            'apartment': 67,
-        },
-        'price': price or 1,
-    }
+from . import utils
 
 
 def _get_update_payload(price: int | None = None, status: str | None = None) -> dict[str, Any]:
@@ -35,34 +23,12 @@ def _get_filter_params(min_price: int | None = None, max_price: int | None = Non
     return {key: value for key, value in params.items() if value is not None}
 
 
-def _get_auth_headers(token: str):
-    return { 'Authorization': f'Bearer {token}' }
-
-
-async def _create_user(service_client: pytest_userver.client.Client) -> str:
-    response = await service_client.post('/register', json={'login': str(uuid.uuid4()), 'password': str(uuid.uuid4()), 'firstName': 'Bob', 'lastName': 'Smith'})
-    assert response.status == 201
-
-    token = response.json()['token']
-    response = await service_client.get('/users/me', headers=_get_auth_headers(token))
-    assert response.status == 200
-
-    return token, response.json()['id']
-
-
-async def _create_property(service_client: pytest_userver.client.Client, token: str, payload: dict[str, Any] | None = None) -> dict[str, Any]:
-    creation_payload = payload or _get_creation_payload()
-    response = await service_client.post('/properties', json=creation_payload, headers=_get_auth_headers(token))
-    response.status == 201
-
-    return response.json()
-
 
 async def test_creates_property(service_client: pytest_userver.client.Client):
-    token, user_id = await _create_user(service_client)
-    creation_payload = _get_creation_payload()
+    token, user_id = await utils.create_user(service_client)
+    creation_payload = utils.get_property_creation_payload()
 
-    response = await service_client.post('/properties', json=creation_payload, headers=_get_auth_headers(token))
+    response = await service_client.post('/properties', json=creation_payload, headers=utils.get_auth_headers(token))
     response.status == 201
 
     created_property = response.json()
@@ -76,7 +42,7 @@ async def test_creates_property(service_client: pytest_userver.client.Client):
 
 
 async def test_unable_to_create_if_unauthorized(service_client: pytest_userver.client.Client):
-    creation_payload = _get_creation_payload()
+    creation_payload = utils.get_property_creation_payload()
     response = await service_client.post('/properties', json=creation_payload)
     response.status == 401
 
@@ -85,12 +51,12 @@ async def test_unable_to_create_if_unauthorized(service_client: pytest_userver.c
     'payload',
     [
         pytest.param({'unknown': 'field'}, id='wrong_payload_structure'),
-        pytest.param(_get_creation_payload(price=-1), id='invalid_price_value'),
+        pytest.param(utils.get_property_creation_payload(price=-1), id='invalid_price_value'),
     ],
 )
 async def test_validates_creation_payload(service_client: pytest_userver.client.Client, payload: dict[str, Any]):
-    token, _ = await _create_user(service_client)
-    response = await service_client.post('/properties', json=payload, headers=_get_auth_headers(token))
+    token, _ = await utils.create_user(service_client)
+    response = await service_client.post('/properties', json=payload, headers=utils.get_auth_headers(token))
     response.status == 400
 
 
@@ -103,8 +69,8 @@ async def test_raises_if_property_not_exists(service_client: pytest_userver.clie
 
 
 async def test_returns_found_property(service_client: pytest_userver.client.Client):
-    token, _ = await _create_user(service_client)
-    property = await _create_property(service_client, token)
+    token, _ = await utils.create_user(service_client)
+    property = await utils.create_property(service_client, token)
     property_id = property['id']
 
     response = await service_client.get(f'/properties/{property_id}')
@@ -127,27 +93,27 @@ async def test_returns_found_property(service_client: pytest_userver.client.Clie
     ]
 )
 async def test_updates_property(service_client: pytest_userver.client.Client, payload: dict[str, Any]):
-    token, _ = await _create_user(service_client)
-    property = await _create_property(service_client, token)
+    token, _ = await utils.create_user(service_client)
+    property = await utils.create_property(service_client, token)
     property_id = property['id']
 
-    response = await service_client.patch(f'/properties/{property_id}', json=payload, headers=_get_auth_headers(token))
+    response = await service_client.patch(f'/properties/{property_id}', json=payload, headers=utils.get_auth_headers(token))
     response.status == 200
 
     assert response.json() == {**property, **payload}
 
 
 async def test_update_not_authorized(service_client: pytest_userver.client.Client):
-    token, _ = await _create_user(service_client)
-    property = await _create_property(service_client, token)
+    token, _ = await utils.create_user(service_client)
+    property = await utils.create_property(service_client, token)
     property_id = property['id']
 
     response = await service_client.patch(f'/properties/{property_id}', json=_get_update_payload())
     assert response.status == 400
 
 async def test_raises_if_update_unknown_property(service_client: pytest_userver.client.Client):
-    token, _ = await _create_user(service_client)
-    response = await service_client.patch('/properties/unknown', json=_get_update_payload(), headers=_get_auth_headers(token))
+    token, _ = await utils.create_user(service_client)
+    response = await service_client.patch('/properties/unknown', json=_get_update_payload(), headers=utils.get_auth_headers(token))
     response.status == 404
 
 
@@ -160,22 +126,22 @@ async def test_raises_if_update_unknown_property(service_client: pytest_userver.
     ]
 )
 async def test_validates_update_payload(service_client: pytest_userver.client.Client, payload: dict[str, Any]):
-    token, _ = await _create_user(service_client)
-    property = await _create_property(service_client, token)
+    token, _ = await utils.create_user(service_client)
+    property = await utils.create_property(service_client, token)
     property_id = property['id']
 
-    response = await service_client.patch(f'/properties/{property_id}', json=payload, headers=_get_auth_headers(token))
+    response = await service_client.patch(f'/properties/{property_id}', json=payload, headers=utils.get_auth_headers(token))
     response.status == 400
 
 
 async def test_validates_if_update_owned_property(service_client: pytest_userver.client.Client):
-    token1, _ = await _create_user(service_client)
-    token2, _ = await _create_user(service_client)
+    token1, _ = await utils.create_user(service_client)
+    token2, _ = await utils.create_user(service_client)
 
-    property = await _create_property(service_client, token1)
+    property = await utils.create_property(service_client, token1)
     property_id = property['id']
 
-    response = await service_client.patch(f'/properties/{property_id}', json=_get_update_payload(), headers=_get_auth_headers(token2))
+    response = await service_client.patch(f'/properties/{property_id}', json=_get_update_payload(), headers=utils.get_auth_headers(token2))
     assert response.status == 403
 
 
@@ -188,17 +154,17 @@ async def test_gets_properties_not_authorized(service_client: pytest_userver.cli
 
 
 async def test_returns_empty_property_list_by_default(service_client: pytest_userver.client.Client):
-    token, _ = await _create_user(service_client)
-    response = await service_client.get('/users/me/properties', headers=_get_auth_headers(token))
+    token, _ = await utils.create_user(service_client)
+    response = await service_client.get('/users/me/properties', headers=utils.get_auth_headers(token))
     assert response.status == 200
     assert response.json() == {'properties': []}
 
 
 async def test_adds_created_property_to_list(service_client: pytest_userver.client.Client):
-    token, _ = await _create_user(service_client)
-    property = await _create_property(service_client, token)
+    token, _ = await utils.create_user(service_client)
+    property = await utils.create_property(service_client, token)
 
-    response = await service_client.get('/users/me/properties', headers=_get_auth_headers(token))
+    response = await service_client.get('/users/me/properties', headers=utils.get_auth_headers(token))
     assert response.status == 200
 
     user_properties = response.json()
@@ -213,13 +179,13 @@ async def test_adds_created_property_to_list(service_client: pytest_userver.clie
 
 
 async def test_filters_properties(service_client: pytest_userver.client.Client):
-    token1, _ = await _create_user(service_client)
-    token2, _ = await _create_user(service_client)
+    token1, _ = await utils.create_user(service_client)
+    token2, _ = await utils.create_user(service_client)
 
-    await _create_property(service_client, token1)
-    property = await _create_property(service_client, token2)
+    await utils.create_property(service_client, token1)
+    property = await utils.create_property(service_client, token2)
 
-    response = await service_client.get('/users/me/properties', headers=_get_auth_headers(token2))
+    response = await service_client.get('/users/me/properties', headers=utils.get_auth_headers(token2))
     assert response.status == 200
 
     user_properties = response.json()
@@ -245,16 +211,16 @@ async def test_filters_properties(service_client: pytest_userver.client.Client):
     ]
 )
 async def test_filters_properties(service_client: pytest_userver.client.Client, params: dict[str, Any], found_property_indexes: list[int]):
-    token, _ = await _create_user(service_client)
+    token, _ = await utils.create_user(service_client)
 
     creation_payloads = [
-        _get_creation_payload(price=2, city='AA'),
-        _get_creation_payload(price=5, city='AB'),
-        _get_creation_payload(price=3, city='CD'),
+        utils.get_property_creation_payload(price=2, city='AA'),
+        utils.get_property_creation_payload(price=5, city='AB'),
+        utils.get_property_creation_payload(price=3, city='CD'),
     ]
 
     property_ids = [
-        (await _create_property(service_client, token, payload))['id']
+        (await utils.create_property(service_client, token, payload))['id']
         for payload in creation_payloads
     ]
 
