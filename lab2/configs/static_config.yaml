@@ -159,4 +159,10 @@ components_manager:
             path: /api/v1/docs/openapi.yaml
             method: GET
             file_path: ../api/openapi.yaml
-            content_type: application/x-yaml
+            content_type: application/yaml
+
+        swagger-ui:
+            path: /api/v1/docs
+            method: GET
+            file_path: ../static/swagger.html
+            content_type: text/html

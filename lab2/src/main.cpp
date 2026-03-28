@@ -67,7 +67,9 @@ int main(int argc, char* argv[]) {
               handlers::get_user_properties_handler::GetUserPropertiesHandler>()
           .Append<handlers::refresh_token_handler::RefreshTokenHandler>()
           .Append<handlers::static_file_handler::StaticFileHandler>(
-              "openapi-schema");
+              "openapi-schema")
+          .Append<handlers::static_file_handler::StaticFileHandler>(
+              "swagger-ui");
 
   return userver::utils::DaemonMain(argc, argv, component_list);
 }
