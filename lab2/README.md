@@ -1,37 +1,74 @@
-# api_gateway
+# 🏢 Property Service API
 
-Template of a C++ service that uses [userver framework](https://github.com/userver-framework/userver).
+REST API для системы по управлению недвижимостью
 
+|          |                |
+|----------|----------------|
+| Вариант  | 24             |
+| Выполнил | Гришин Алексей |
+| Группа   | М8О-106СВ-25   |
 
-## Download and Build
+## Getting started
 
-To create your own userver-based service follow the following steps:
+### 📦 Запуск приложения
 
-1. Press the "Use this template button" at the top right of this GitHub page
-2. Clone the service `git clone your-service-repo && cd your-service-repo && git submodule update --init`
-3. Give a proper name to your service and replace all the occurrences of "api_gateway" string with that name
-4. Feel free to tweak, adjust or fully rewrite the source code of your service.
+TODO
 
+### 📍 API Endpoints
 
-## Makefile
+Для ознакомления с набором доступных эндпоинтов сервис предоставляет endpoint
+`/api/v1/docs` по которому открывается Swagger UI.
 
-`PRESET` is either `debug`, `release`, or if you've added custom presets in `CMakeUserPresets.json`, it
-can also be `debug-custom`, `release-custom`.
+TODO: Add picture
 
-* `make cmake-PRESET` - run cmake configure, update cmake options and source file lists
-* `make build-PRESET` - build the service
-* `make test-PRESET` - build the service and run all tests
-* `make start-PRESET` - build the service, start it in testsuite environment and leave it running
-* `make install-PRESET` - build the service and install it in directory set in environment `PREFIX`
-* `make` or `make all` - build and run all tests in `debug` and `release` modes
-* `make format` - reformat all C++ and Python sources
-* `make dist-clean` - clean build files and cmake cache
-* `make docker-COMMAND` - run `make COMMAND` in docker environment
-* `make docker-clean-data` - stop docker containers
+Для получения схемы API по спецификации OpenAPI 3.0 сервис предоставляет endpoint
+`/api/v1/docs/openapi.yaml`.
 
+```bash
+curl "http://localhost:8080/api/v1/docs/openapi.yaml"
+```
 
-## License
+### 🔑 Авторизация
 
-The original template is distributed under the [Apache-2.0 License](https://github.com/userver-framework/userver/blob/develop/LICENSE)
-and [CLA](https://github.com/userver-framework/userver/blob/develop/CONTRIBUTING.md). Services based on the template may change
-the license and CLA.
+Авторизация сервиса основана на JWT токенах. При регистрации или аутентификации
+возвращается JSON объект, содержащий 2 токена: access-токен и refresh-токен.
+
+```json
+{
+    "accessToken": "<access-token>",
+    "refreshToken": "<refresh-token>"
+}
+```
+
+Access-токен необходим для авторизации запросов и передается в заголовке `Authorization`.
+Сервис использует тип авторизации `Bearer`. Ниже предоставлен пример отправки авторизованного
+запроса в сервис.
+
+```bash
+curl -X POST -H "Authorization: Bearer <access-token>" "http://localhost:8080/api/v1/example"
+```
+
+Access-токен имеет ограниченное время жизни и со временем может стать невалидным. Для перевыпуска
+access-токена сервис предоставляет endpoint `/api/v1/auth/refresh`, куда в качестве тела запроса
+передается refresh-токен. Ниже предоставлен пример отправки запроса на перевыпуск токена.
+
+```bash
+curl -X POST "http://localhost:8080/api/v1/auth/refresh" \
+    -d '{
+        "refreshToken": "<refresh-token>"
+    }'
+```
+
+## Примеры запросов
+
+### Создание пользователя
+
+TODO
+
+### Создание объекта недвижимости
+
+TODO
+
+### Запись на просмотр объекта недвижимости
+
+TODO
