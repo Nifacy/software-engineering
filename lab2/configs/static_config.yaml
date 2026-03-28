@@ -154,3 +154,9 @@ components_manager:
         refresh-token-handler:
             path: /auth/refresh
             method: POST
+
+        openapi-schema:
+            path: /api/v1/docs/openapi.yaml
+            method: GET
+            file_path: ../api/openapi.yaml
+            content_type: application/x-yaml

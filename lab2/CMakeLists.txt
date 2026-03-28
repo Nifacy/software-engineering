@@ -57,6 +57,7 @@ add_library(
     src/handlers/update_property_handler.cpp
     src/handlers/get_user_properties_handler.cpp
     src/handlers/refresh_token_handler.cpp
+    src/handlers/static_file_handler.cpp
 )
 
 target_link_libraries(

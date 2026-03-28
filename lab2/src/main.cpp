@@ -15,6 +15,7 @@
 #include <handlers/refresh_token_handler.hpp>
 #include <handlers/register_handler.hpp>
 #include <handlers/schedule_viewing_handler.hpp>
+#include <handlers/static_file_handler.hpp>
 #include <handlers/update_property_handler.hpp>
 #include <userver/clients/dns/component.hpp>
 #include <userver/clients/http/component_list.hpp>
@@ -64,7 +65,9 @@ int main(int argc, char* argv[]) {
           .Append<handlers::update_property_handler::UpdatePropertyHandler>()
           .Append<
               handlers::get_user_properties_handler::GetUserPropertiesHandler>()
-          .Append<handlers::refresh_token_handler::RefreshTokenHandler>();
+          .Append<handlers::refresh_token_handler::RefreshTokenHandler>()
+          .Append<handlers::static_file_handler::StaticFileHandler>(
+              "openapi-schema");
 
   return userver::utils::DaemonMain(argc, argv, component_list);
 }
