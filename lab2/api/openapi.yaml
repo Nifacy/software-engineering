@@ -164,6 +164,120 @@ paths:
                 $ref: '#/components/schemas/Property'
         '400':
           description: Invalid payload
+    get:
+      tags: [ property ]
+      summary: Find properties by specified filters
+      operationId: findProperties
+      parameters:
+      - name: city
+        in: query
+        description: City of property
+        required: false
+        explode: true
+        schema:
+          type: string
+      - name: minPrice
+        in: query
+        description: Minimum price of property
+        required: false
+        explode: true
+        schema:
+          type: integer
+      - name: maxPrice
+        in: query
+        description: Maximum price of property
+        required: false
+        explode: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Properties found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FindPropertiesResponse'
+        '400':
+          description: Invalid filter values
+
+  /properties/{propertyId}:
+    get:
+      tags: [ property ]
+      summary: Get information about property by specified ID
+      operationId: getPropertyById
+      parameters:
+      - name: propertyId
+        in: path
+        description: ID of property
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Property found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Property'
+        '404':
+          description: Property not found
+
+  /properties/{propertyId}/viewings:
+    post:
+      tags: [ viewing ]
+      summary: Schedule property viewing
+      operationId: scheduleViewing
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: propertyId
+        in: path
+        description: ID of property
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduleViewingRequestBody'
+        required: true
+      responses:
+        '200':
+          description: Viewing scheduled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Viewing'
+        '400':
+          description: Invlid payload
+
+  /properties/{propertyId}/viewings/{viewingId}:
+    delete:
+      tags: [ viewing ]
+      summary: Delete scheduled viewing
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: propertyId
+        in: path
+        description: ID of property
+        required: true
+        schema:
+          type: string
+      - name: viewingId
+        in: path
+        description: ID of viewing
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Viewing deleted
+        '403':
+          description: Permission denied
+        '404':
+          description: Viewing or property not found
 
 components:
   securitySchemes:
@@ -318,10 +432,55 @@ components:
       additionalProperties: false
       properties:
         address:
-          $ref: "./common.yaml#/components/schemas/Address"
+          $ref: '#/components/schemas/Address'
         price:
           type: integer
           minimum: 1
       required:
       - address
       - price
+
+    FindPropertiesResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        propertyIds:
+          type: array
+          items:
+            type: string
+            minLength: 1
+      required:
+      - propertyIds
+
+    Viewing:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          minLength: 1
+        user_id:
+          type: string
+          minLength: 1
+        property_id:
+          type: string
+          minLength: 1
+        date:
+          type: string
+          format: date
+      required:
+      - id
+      - user_id
+      - property_id
+      - date
+
+    ScheduleViewingRequestBody:
+      type: object
+      additionalProperties: false
+      properties:
+        date:
+          type: string
+          format: date
+      required:
+      - date
+
