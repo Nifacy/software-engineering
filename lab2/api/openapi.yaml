@@ -221,6 +221,35 @@ paths:
                 $ref: '#/components/schemas/Property'
         '404':
           description: Property not found
+    patch:
+      tags: [ property ]
+      summary: Update information about property
+      operationId: upedateProperty
+      parameters:
+      - name: propertyId
+        in: path
+        description: ID of property
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePropertyRequestBody'
+      responses:
+        '400':
+          description: Invalid payload
+        '403':
+          description: Permission denied
+        '404':
+          description: Property not found
+        '200':
+          description: Property updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Property'
 
   /properties/{propertyId}/viewings:
     post:
@@ -297,6 +326,59 @@ paths:
           description: Permission denied
         '404':
           description: Viewing or property not found
+
+  /users/me/viewings:
+    get:
+      tags: [ viewing ]
+      summary: Get current user viewings
+      operationId: getUserViewings
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Viewings found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserViewingList'
+
+  /users/me/properties:
+    get:
+      tags: [ property ]
+      summary: Get current user properties
+      operationId: getUserProperties
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Properties found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPropertyList'
+
+  /auth/refresh:
+    post:
+      tags: [ auth ]
+      summary: Refresh token
+      operationId: refreshToken
+      security:
+      - bearerAuth: []
+      responses:
+        '400':
+          description: Invalid payload
+        '200':
+          description: Tokens refreshed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPair'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequestBody'
+        required: true
 
 components:
   securitySchemes:
@@ -531,3 +613,83 @@ components:
             $ref: "#/components/schemas/PropertyViewing"
       required:
       - viewings
+
+    UserViewing:
+      type: object
+      additionalProperties: false
+      properties:
+        propertyId:
+          type: string
+          minLength: 1
+        id:
+          type: string
+          minLength: 1
+        date:
+          type: string
+          format: date
+      required:
+      - id
+      - propertyId
+      - date
+
+    UserViewingList:
+      type: object
+      additionalProperties: false
+      properties:
+        viewings:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserViewing'
+      required:
+      - viewings
+
+    UpdatePropertyRequestBody:
+      type: object
+      additionalProperties: false
+      properties:
+        status:
+          $ref: "#/components/schemas/PropertyStatus"
+        price:
+          type: integer
+          minimum: 1
+
+    UserProperty:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          minLength: 1
+        address:
+          $ref: "./common.yaml#/components/schemas/Address"
+        status:
+          $ref: "./property.yaml#/components/schemas/PropertyStatus"
+        price:
+          type: integer
+          minimum: 1
+      required:
+      - id
+      - address
+      - status
+      - price
+
+    UserPropertyList:
+      type: object
+      additionalProperties: false
+      properties:
+        properties:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserProperty"
+      required:
+      - properties
+
+    RefreshTokenRequestBody:
+      type: object
+      additionalProperties: false
+      properties:
+        accessToken:
+          type: string
+          minLength: 1
+      required:
+      - accessToken
