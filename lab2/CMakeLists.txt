@@ -39,6 +39,7 @@ add_library(
     src/components/user_storage.cpp
     src/components/property_storage.cpp
     src/components/viewing_storage.cpp
+    src/components/jwt_auth.cpp
     src/handlers/register_handler.cpp
     src/handlers/login_handler.cpp
     src/auth/auth_checker.cpp
@@ -55,11 +56,13 @@ add_library(
     src/handlers/get_user_viewings_handler.cpp
     src/handlers/update_property_handler.cpp
     src/handlers/get_user_properties_handler.cpp
+    src/handlers/refresh_token_handler.cpp
 )
 
 target_link_libraries(
     ${PROJECT_NAME}_objs
-    PUBLIC userver::core
+    PUBLIC userver::core #
+    PUBLIC jwt-cpp::jwt-cpp #
 )
 
 

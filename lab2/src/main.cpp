@@ -1,5 +1,6 @@
 #include <auth/auth_checker_factory.hpp>
 #include <components/credentials_storage.hpp>
+#include <components/jwt_auth.hpp>
 #include <components/viewing_storage.hpp>
 #include <handlers/delete_viewing_handler.hpp>
 #include <handlers/find_properties_handler.hpp>
@@ -11,6 +12,7 @@
 #include <handlers/get_user_properties_handler.hpp>
 #include <handlers/get_user_viewings_handler.hpp>
 #include <handlers/login_handler.hpp>
+#include <handlers/refresh_token_handler.hpp>
 #include <handlers/register_handler.hpp>
 #include <handlers/schedule_viewing_handler.hpp>
 #include <handlers/update_property_handler.hpp>
@@ -42,6 +44,7 @@ int main(int argc, char* argv[]) {
           .Append<userver::congestion_control::Component>()
           .Append<components::user_storage::UserStorage>()
           .Append<components::property_storage::PropertyStorage>()
+          .Append<components::jwt_auth::JwtAuthComponent>()
           .Append<components::credentials_storage::CredentialsStorage>()
           .Append<components::viewing_storage::ViewingStorage>()
           .Append<handlers::register_handler::RegisterHandler>()
@@ -59,8 +62,9 @@ int main(int argc, char* argv[]) {
                       GetPropertyViewingsHandler>()
           .Append<handlers::get_user_viewings_handler::GetUserViewingsHandler>()
           .Append<handlers::update_property_handler::UpdatePropertyHandler>()
-          .Append<handlers::get_user_properties_handler::
-                      GetUserPropertiesHandler>();
+          .Append<
+              handlers::get_user_properties_handler::GetUserPropertiesHandler>()
+          .Append<handlers::refresh_token_handler::RefreshTokenHandler>();
 
   return userver::utils::DaemonMain(argc, argv, component_list);
 }

@@ -1,4 +1,5 @@
 #include <components/credentials_storage.hpp>
+#include <components/jwt_auth.hpp>
 #include <userver/server/handlers/auth/auth_checker_base.hpp>
 
 namespace auth {
@@ -9,7 +10,8 @@ class AuthChecker final
   using AuthCheckResult = userver::server::handlers::auth::AuthCheckResult;
 
   AuthChecker(const components::credentials_storage::CredentialsStorage&
-                  credentials_storage);
+                  credentials_storage,
+              const components::jwt_auth::JwtAuthComponent& jwt_auth);
 
   AuthCheckResult CheckAuth(
       const userver::server::http::HttpRequest& request,
@@ -20,6 +22,8 @@ class AuthChecker final
  private:
   const components::credentials_storage::CredentialsStorage&
       credentials_storage_;
+
+  const components::jwt_auth::JwtAuthComponent& jwt_auth_;
 };
 
 class AuthCheckerComponent final : public userver::components::ComponentBase {

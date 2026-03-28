@@ -62,6 +62,16 @@ components_manager:
         viewing-storage:
             load-enabled: true
 
+        jwt-auth:
+            load-enabled: true
+            access_secret: $access_secret
+            access_secret#env: ACCESS_SECRET
+            refresh_secret: $refresh_secret
+            refresh_secret#env: REFRESH_SECRET
+            access_lifetime: 3600  # 1 hour
+            refresh_lifetime: 604800  # 1 week
+            issuer: property-service
+
         # HTTP endpoint handlers
 
         register-handler:
@@ -85,14 +95,14 @@ components_manager:
             method: GET
             auth:
                 types:
-                - simple-auth
+                - jwt-auth
 
         create-property-handler:
             path: /properties
             method: POST
             auth:
                 types:
-                - simple-auth
+                - jwt-auth
 
         find-properties-handler:
             path: /properties
@@ -107,14 +117,14 @@ components_manager:
             method: POST
             auth:
                 types:
-                - simple-auth
+                - jwt-auth
 
         delete-viewing-handler:
             path: /properties/{property_id}/viewings/{viewing_id}
             method: DELETE
             auth:
                 types:
-                - simple-auth
+                - jwt-auth
 
         get-property-viewings-handler:
             path: /properties/{id}/viewings
@@ -125,18 +135,22 @@ components_manager:
             method: GET
             auth:
                 types:
-                - simple-auth
+                - jwt-auth
 
         update-property-handler:
             path: /properties/{id}
             method: PATCH
             auth:
                 types:
-                - simple-auth
+                - jwt-auth
 
         get-user-properties-handler:
             path: /users/me/properties
             method: GET
             auth:
                 types:
-                - simple-auth
+                - jwt-auth
+
+        refresh-token-handler:
+            path: /auth/refresh
+            method: POST

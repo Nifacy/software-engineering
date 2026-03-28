@@ -1,10 +1,30 @@
 #pragma once
 
+#include <stdexcept>
 #include <string>
-#include <unordered_set>
 #include <userver/components/component_base.hpp>
 
 namespace components::credentials_storage {
+
+struct Credentials {
+  std::string verify_secret;
+  std::string payload;
+};
+
+class CredentialsAlreadyExists : std::runtime_error {
+ public:
+  CredentialsAlreadyExists(const std::string& key);
+};
+
+class CredentialsNotFound : std::runtime_error {
+ public:
+  CredentialsNotFound(const std::string& key);
+};
+
+class InvalidVerifySecret : std::runtime_error {
+ public:
+  InvalidVerifySecret(const std::string& key);
+};
 
 class CredentialsStorage final : public userver::components::ComponentBase {
  public:
@@ -14,12 +34,13 @@ class CredentialsStorage final : public userver::components::ComponentBase {
       const userver::components::ComponentConfig& config,
       const userver::components::ComponentContext& context);
 
-  void AddCredentials(const std::string& credentials);
+  void AddCredentials(const std::string& key, const Credentials& credentials);
 
-  bool HasCredentials(const std::string& credentials) const;
+  std::string VerifyCredentials(const std::string& key,
+                                const std::string& verify_secret) const;
 
  private:
-  std::unordered_set<std::string> credentials_;
+  std::unordered_map<std::string, Credentials> credentials_;
 };
 
 }  // namespace components::credentials_storage

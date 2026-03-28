@@ -5,3 +5,6 @@ logger-level: debug
 is-testing: true
 
 server-port: 8080
+
+access_secret: Kx9mN2pL5vQ8wR3tY6uI0oP4sA7dF1gH
+refresh_secret: Zy8xW7vU6tS5rQ4pO3nM2lK1jI0hG9fE

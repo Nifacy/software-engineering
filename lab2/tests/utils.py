@@ -59,7 +59,7 @@ async def register(service_client: pytest_userver.client.Client, payload: dict[s
     response = await service_client.post('/register', json=payload or get_register_payload())
     assert response.status == 201
 
-    return response.json()['token']
+    return response.json()['accessToken']
 
 
 async def create_user(service_client: pytest_userver.client.Client, payload: dict[str, Any] | None = None) -> tuple[str, str]:

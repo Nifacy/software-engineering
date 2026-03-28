@@ -10,7 +10,7 @@ namespace auth {
 class AuthCheckerFactory final
     : public userver::server::handlers::auth::AuthCheckerFactoryBase {
  public:
-  static constexpr const char* kAuthType = "simple-auth";
+  static constexpr const char* kAuthType = "jwt-auth";
 
   AuthCheckerFactory(const userver::components::ComponentContext& context);
 
