@@ -251,6 +251,25 @@ paths:
                 $ref: '#/components/schemas/Viewing'
         '400':
           description: Invlid payload
+    get:
+      tags: [ property, viewing ]
+      summary: Get viewings for specified property
+      parameters:
+      - name: propertyId
+        in: path
+        description: ID of property
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Viewings found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PropertyViewingList'
+        '404':
+          description: Property not found
 
   /properties/{propertyId}/viewings/{viewingId}:
     delete:
@@ -484,3 +503,31 @@ components:
       required:
       - date
 
+    PropertyViewing:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          minLength: 1
+        user_id:
+          type: string
+          minLength: 1
+        date:
+          type: string
+          format: date
+      required:
+      - id
+      - user_id
+      - date
+
+    PropertyViewingList:
+      type: object
+      additionalProperties: false
+      properties:
+        viewings:
+          type: array
+          items:
+            $ref: "#/components/schemas/PropertyViewing"
+      required:
+      - viewings
