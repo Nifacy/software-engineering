@@ -63,12 +63,37 @@ curl -X POST "http://localhost:8080/api/v1/auth/refresh" \
 
 ### Создание пользователя
 
-TODO
+```bash
+curl -X POST "http://localhost:8080/api/v1/auth/register" \
+    -d '{
+        "login": "dmitro",
+        "password": "foo",
+        "firstName": "Dmitro",
+        "lastName": "Soshnikov"
+    }'
+```
 
 ### Создание объекта недвижимости
 
-TODO
+```bash
+curl -X POST http://localhost:8080/api/v1/properties \
+    -H "Authorization: Bearer $ACCESS_TOKEN" \
+    -d '{
+        "address": {
+            "country": "Russia",
+            "city": "Moscow",
+            "street": "Voykovskaya",
+            "building": 4,
+            "apartment": 221
+        },
+        "price": 67
+    }'
+```
 
 ### Запись на просмотр объекта недвижимости
 
-TODO
+```bash
+curl -X POST "http://localhost:8080/api/v1/properties/$PROPERTY_ID/viewings" \
+    -H "Authorization: Bearer $ACCESS_TOKEN" \
+    -d '{"date": "2026-10-20"}'
+```
