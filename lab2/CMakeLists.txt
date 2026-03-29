@@ -31,33 +31,18 @@ endif()
 userver_setup_environment()
 
 # Common sources
+
 include_directories(src)
+
+file(GLOB_RECURSE COMPONENT_SOURCE_FILES "src/components/*.cpp")
+file(GLOB_RECURSE HANDLER_SOURCE_FILES "src/handlers/*.cpp")
+file(GLOB_RECURSE AUTH_SOURCE_FILES "src/auth/*.cpp")
 
 add_library(
     ${PROJECT_NAME}_objs OBJECT
-    src/components/credentials_storage.cpp
-    src/components/user_storage.cpp
-    src/components/property_storage.cpp
-    src/components/viewing_storage.cpp
-    src/components/jwt_auth.cpp
-    src/handlers/register_handler.cpp
-    src/handlers/login_handler.cpp
-    src/auth/auth_checker.cpp
-    src/auth/auth_checker_factory.cpp
-    src/handlers/get_current_user_handler.cpp
-    src/handlers/create_property_handler.cpp
-    src/handlers/find_users_handler.cpp
-    src/handlers/get_user_handler.cpp
-    src/handlers/find_properties_handler.cpp
-    src/handlers/get_property_handler.cpp
-    src/handlers/schedule_viewing_handler.cpp
-    src/handlers/delete_viewing_handler.cpp
-    src/handlers/get_property_viewings_handler.cpp
-    src/handlers/get_user_viewings_handler.cpp
-    src/handlers/update_property_handler.cpp
-    src/handlers/get_user_properties_handler.cpp
-    src/handlers/refresh_token_handler.cpp
-    src/handlers/static_file_handler.cpp
+    ${COMPONENT_SOURCE_FILES}
+    ${HANDLER_SOURCE_FILES}
+    ${AUTH_SOURCE_FILES}
 )
 
 target_link_libraries(
@@ -65,7 +50,6 @@ target_link_libraries(
     PUBLIC userver::core #
     PUBLIC jwt-cpp::jwt-cpp #
 )
-
 
 # Generate schema C++ types
 
@@ -82,32 +66,11 @@ userver_target_generate_chaotic(
 )
 target_link_libraries(${PROJECT_NAME}_objs PRIVATE ${PROJECT_NAME}-chgen)
 
-
 # The Service
+
 add_executable(${PROJECT_NAME} src/main.cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}_objs)
 
 # Functional testing
+
 userver_testsuite_add_simple()
-
-# Install
-include(GNUInstallDirs)
-
-if(DEFINED ENV{PREFIX})
-    message(STATUS "Set install prefix: $ENV{PREFIX}")
-    file(TO_CMAKE_PATH "$ENV{PREFIX}" PREFIX_PATH)
-    set(CMAKE_INSTALL_PREFIX "${PREFIX_PATH}")
-endif()
-
-file(GLOB CONFIGS_FILES ${CMAKE_CURRENT_SOURCE_DIR}/configs/*.yaml ${CMAKE_CURRENT_SOURCE_DIR}/configs/*.json)
-
-install(
-    TARGETS ${PROJECT_NAME}
-    DESTINATION ${CMAKE_INSTALL_BINDIR}
-    COMPONENT ${PROJECT_NAME}
-)
-install(
-    FILES ${CONFIGS_FILES}
-    DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/${PROJECT_NAME}
-    COMPONENT ${PROJECT_NAME}
-)
