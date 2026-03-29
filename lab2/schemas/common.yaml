@@ -1,0 +1,29 @@
+components:
+  schemas:
+    Address:
+      type: object
+      additionalProperties: false
+      properties:
+        country:
+          type: string
+          minLength: 1
+        city:
+          type: string
+          minLength: 1
+        street:
+          type: string
+          minLength: 1
+        building:
+          type: integer
+          format: int32
+          minimum: 1
+        apartment:
+          type: integer
+          format: int32
+          minimum: 1
+      required:
+      - country
+      - city
+      - street
+      - building
+      - apartment

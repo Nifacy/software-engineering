@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  api_gateway:
+    build: Dockerfile
+    image: api_gateway:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - ACCESS_SECRET=${ACCESS_SECRET}
+      - REFRESH_SECRET=${REFRESH_SECRET}
