@@ -75,85 +75,85 @@ components_manager:
         # HTTP endpoint handlers
 
         register-handler:
-            path: /register
+            path: /api/v1/auth/register
             method: POST
 
         login-handler:
-            path: /login
+            path: /api/v1/auth/login
+            method: POST
+
+        refresh-token-handler:
+            path: /api/v1/auth/refresh
             method: POST
 
         find-users-handler:
-            path: /users
+            path: /api/v1/users
             method: GET
 
         get-user-handler:
-            path: /users/{id}
+            path: /api/v1/users/{id}
             method: GET
 
         get-current-user-handler:
-            path: /users/me
+            path: /api/v1/users/me
             method: GET
             auth:
                 types:
                 - jwt-auth
 
         create-property-handler:
-            path: /properties
+            path: /api/v1/properties
             method: POST
             auth:
                 types:
                 - jwt-auth
 
         find-properties-handler:
-            path: /properties
+            path: /api/v1/properties
             method: GET
 
         get-property-handler:
-            path: /properties/{id}
+            path: /api/v1/properties/{id}
             method: GET
 
         schedule-viewing-handler:
-            path: /properties/{id}/viewings
+            path: /api/v1/properties/{id}/viewings
             method: POST
             auth:
                 types:
                 - jwt-auth
 
         delete-viewing-handler:
-            path: /properties/{property_id}/viewings/{viewing_id}
+            path: /api/v1/properties/{property_id}/viewings/{viewing_id}
             method: DELETE
             auth:
                 types:
                 - jwt-auth
 
         get-property-viewings-handler:
-            path: /properties/{id}/viewings
+            path: /api/v1/properties/{id}/viewings
             method: GET
 
         get-user-viewings-handler:
-            path: /users/me/viewings
+            path: /api/v1/users/me/viewings
             method: GET
             auth:
                 types:
                 - jwt-auth
 
         update-property-handler:
-            path: /properties/{id}
+            path: /api/v1/properties/{id}
             method: PATCH
             auth:
                 types:
                 - jwt-auth
 
         get-user-properties-handler:
-            path: /users/me/properties
+            path: /api/v1/users/me/properties
             method: GET
             auth:
                 types:
                 - jwt-auth
-
-        refresh-token-handler:
-            path: /auth/refresh
-            method: POST
 
         openapi-schema:
             path: /api/v1/docs/openapi.yaml
