@@ -53,7 +53,7 @@ target_link_libraries(
 
 # Generate schema C++ types
 
-file(GLOB_RECURSE SCHEMAS ${CMAKE_CURRENT_SOURCE_DIR}/schemas/*.yaml)
+file(GLOB_RECURSE SCHEMAS ${CMAKE_CURRENT_SOURCE_DIR}/api/definitions/*.yaml)
 userver_target_generate_chaotic(
     ${PROJECT_NAME}-chgen
     # Generate serializers for responses
@@ -65,6 +65,13 @@ userver_target_generate_chaotic(
     RELATIVE_TO ${CMAKE_CURRENT_SOURCE_DIR}
 )
 target_link_libraries(${PROJECT_NAME}_objs PRIVATE ${PROJECT_NAME}-chgen)
+
+# Generate static files
+
+file(GLOB OPEN_API_FILES "${CMAKE_CURRENT_SOURCE_DIR}/api/*")
+file(COPY ${OPEN_API_FILES} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/static/docs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/static/swagger.html DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/static/docs/)
+file(RENAME ${CMAKE_CURRENT_BINARY_DIR}/static/docs/swagger.html ${CMAKE_CURRENT_BINARY_DIR}/static/docs/index.html)
 
 # The Service
 

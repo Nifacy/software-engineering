@@ -47,6 +47,9 @@ components_manager:
 
         # Project components
 
+        fs-cache-main:
+            dir: static/docs
+
         credentials-storage:
             load-enabled: true
 
@@ -155,14 +158,8 @@ components_manager:
                 types:
                 - jwt-auth
 
-        openapi-schema:
-            path: /api/v1/docs/openapi.yaml
+        docs-handler:
+            path: /api/v1/docs/*
             method: GET
-            file_path: ../api/openapi.yaml
-            content_type: application/yaml
-
-        swagger-ui:
-            path: /api/v1/docs
-            method: GET
-            file_path: ../static/swagger.html
-            content_type: text/html
+            fs-cache-component: fs-cache-main
+            directory-file: index.html

@@ -34,7 +34,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RegisterRequestBody'
+              $ref: ./definitions/auth.yaml#/components/schemas/RegisterRequestBody
         required: true
       responses:
         '201':
@@ -42,7 +42,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TokenPair"
+                $ref: ./definitions/auth.yaml#/components/schemas/TokenPair
         '400':
           description: Invalid payload
         '409':
@@ -57,7 +57,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LoginRequestBody'
+              $ref: ./definitions/auth.yaml#/components/schemas/LoginRequestBody
         required: true
       responses:
         '200':
@@ -65,7 +65,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TokenPair'
+                $ref: ./definitions/auth.yaml#/components/schemas/TokenPair
         '400':
           description: Invalid payload
         '401':
@@ -104,7 +104,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserIds'
+                $ref: ./definitions/user.yaml#/components/schemas/UserIds
 
   /api/v1/users/{userId}:
     get:
@@ -124,7 +124,7 @@ paths:
           content:
             appliction/json:
               schema:
-                $ref: '#/components/schemas/UserInfo'
+                $ref: ./definitions/user.yaml#/components/schemas/UserInfo
         '404':
           description: User not found
 
@@ -141,7 +141,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserInfo'
+                $ref: ./definitions/user.yaml#/components/schemas/UserInfo
   /api/v1/properties:
     post:
       tags: [ property ]
@@ -153,7 +153,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreatePropertyRequestBody'
+              $ref: ./definitions/property.yaml#/components/schemas/CreatePropertyRequestBody
         required: true
       responses:
         '200':
@@ -161,7 +161,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Property'
+                $ref: ./definitions/property.yaml#/components/schemas/Property
         '400':
           description: Invalid payload
     get:
@@ -196,7 +196,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FindPropertiesResponse'
+                $ref: ./definitions/property.yaml#/components/schemas/FindPropertiesResponse
         '400':
           description: Invalid filter values
 
@@ -218,7 +218,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Property'
+                $ref: ./definitions/property.yaml#/components/schemas/Property
         '404':
           description: Property not found
     patch:
@@ -236,7 +236,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdatePropertyRequestBody'
+              $ref: ./definitions/property.yaml#/components/schemas/UpdatePropertyRequestBody
       responses:
         '400':
           description: Invalid payload
@@ -249,7 +249,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Property'
+                $ref: ./definitions/property.yaml#/components/schemas/Property
 
   /api/v1/properties/{propertyId}/viewings:
     post:
@@ -269,7 +269,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ScheduleViewingRequestBody'
+              $ref: ./definitions/property.yaml#/components/schemas/ScheduleViewingRequestBody
         required: true
       responses:
         '200':
@@ -277,7 +277,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Viewing'
+                $ref: ./definitions/viewing.yaml#/components/schemas/Viewing
         '400':
           description: Invlid payload
     get:
@@ -296,7 +296,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PropertyViewingList'
+                $ref: ./definitions/property.yaml#/components/schemas/PropertyViewingList
         '404':
           description: Property not found
 
@@ -340,7 +340,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserViewingList'
+                $ref: ./definitions/user.yaml#/components/schemas/UserViewingList
 
   /api/v1/users/me/properties:
     get:
@@ -355,7 +355,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserPropertyList'
+                $ref: ./definitions/user.yaml#/components/schemas/UserPropertyList
 
   /api/v1/auth/refresh:
     post:
@@ -372,324 +372,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TokenPair'
+                $ref: ./definitions/auth.yaml#/components/schemas/TokenPair
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RefreshTokenRequestBody'
+              $ref: ./definitions/auth.yaml#/components/schemas/RefreshTokenRequestBody
         required: true
-
-components:
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-
-  schemas:
-    RegisterRequestBody:
-      type: object
-      additionalProperties: false
-      properties:
-        login:
-          type: string
-          minLength: 1
-        password:
-          type: string
-          minLength: 1
-        firstName:
-          type: string
-          minLength: 1
-        lastName:
-          type: string
-          minLength: 1
-      required:
-      - login
-      - password
-      - firstName
-      - lastName
-
-    TokenPair:
-      type: object
-      additionalProperties: false
-      properties:
-        accessToken:
-          type: string
-          minLength: 1
-        refreshToken:
-          type: string
-          minLength: 1
-      required:
-      - accessToken
-      - refreshToken
-
-    LoginRequestBody:
-      type: object
-      additionalProperties: false
-      properties:
-        login:
-          type: string
-          minLength: 1
-        password:
-          type: string
-          minLength: 1
-      required:
-      - login
-      - password
-
-    UserIds:
-      type: object
-      additionalProperties: false
-      properties:
-        userIds:
-          type: array
-          items:
-            type: string
-            minLength: 1
-      required:
-      - userIds
-
-    UserInfo:
-      type: object
-      additionalProperties: false
-      properties:
-        id:
-          type: string
-          minLength: 1
-        login:
-          type: string
-          minLength: 1
-        firstName:
-          type: string
-          minLength: 1
-        lastName:
-          type: string
-          minLength: 1
-      required:
-      - id
-      - login
-      - firstName
-      - lastName
-
-    PropertyStatus:
-      type: string
-      enum: [ "active", "sold" ]
-
-    Address:
-      type: object
-      additionalProperties: false
-      properties:
-        country:
-          type: string
-          minLength: 1
-        city:
-          type: string
-          minLength: 1
-        street:
-          type: string
-          minLength: 1
-        building:
-          type: integer
-          format: int32
-          minimum: 1
-        apartment:
-          type: integer
-          format: int32
-          minimum: 1
-      required:
-      - country
-      - city
-      - street
-      - building
-      - apartment
-
-    Property:
-      type: object
-      additionalProperties: false
-      properties:
-        id:
-          type: string
-          minLength: 1
-        address:
-          $ref: '#/components/schemas/Address'
-        ownerId:
-          type: string
-          minLength: 1
-        status:
-          $ref: '#/components/schemas/PropertyStatus'
-        price:
-          type: integer
-          minimum: 1
-      required:
-      - id
-      - address
-      - ownerId
-      - status
-      - price
-
-    CreatePropertyRequestBody:
-      type: object
-      additionalProperties: false
-      properties:
-        address:
-          $ref: '#/components/schemas/Address'
-        price:
-          type: integer
-          minimum: 1
-      required:
-      - address
-      - price
-
-    FindPropertiesResponse:
-      type: object
-      additionalProperties: false
-      properties:
-        propertyIds:
-          type: array
-          items:
-            type: string
-            minLength: 1
-      required:
-      - propertyIds
-
-    Viewing:
-      type: object
-      additionalProperties: false
-      properties:
-        id:
-          type: string
-          minLength: 1
-        user_id:
-          type: string
-          minLength: 1
-        property_id:
-          type: string
-          minLength: 1
-        date:
-          type: string
-          format: date
-      required:
-      - id
-      - user_id
-      - property_id
-      - date
-
-    ScheduleViewingRequestBody:
-      type: object
-      additionalProperties: false
-      properties:
-        date:
-          type: string
-          format: date
-      required:
-      - date
-
-    PropertyViewing:
-      type: object
-      additionalProperties: false
-      properties:
-        id:
-          type: string
-          minLength: 1
-        user_id:
-          type: string
-          minLength: 1
-        date:
-          type: string
-          format: date
-      required:
-      - id
-      - user_id
-      - date
-
-    PropertyViewingList:
-      type: object
-      additionalProperties: false
-      properties:
-        viewings:
-          type: array
-          items:
-            $ref: "#/components/schemas/PropertyViewing"
-      required:
-      - viewings
-
-    UserViewing:
-      type: object
-      additionalProperties: false
-      properties:
-        propertyId:
-          type: string
-          minLength: 1
-        id:
-          type: string
-          minLength: 1
-        date:
-          type: string
-          format: date
-      required:
-      - id
-      - propertyId
-      - date
-
-    UserViewingList:
-      type: object
-      additionalProperties: false
-      properties:
-        viewings:
-          type: array
-          items:
-            $ref: '#/components/schemas/UserViewing'
-      required:
-      - viewings
-
-    UpdatePropertyRequestBody:
-      type: object
-      additionalProperties: false
-      properties:
-        status:
-          $ref: "#/components/schemas/PropertyStatus"
-        price:
-          type: integer
-          minimum: 1
-
-    UserProperty:
-      type: object
-      additionalProperties: false
-      properties:
-        id:
-          type: string
-          minLength: 1
-        address:
-          $ref: "./common.yaml#/components/schemas/Address"
-        status:
-          $ref: "./property.yaml#/components/schemas/PropertyStatus"
-        price:
-          type: integer
-          minimum: 1
-      required:
-      - id
-      - address
-      - status
-      - price
-
-    UserPropertyList:
-      type: object
-      additionalProperties: false
-      properties:
-        properties:
-          type: array
-          items:
-            $ref: "#/components/schemas/UserProperty"
-      required:
-      - properties
-
-    RefreshTokenRequestBody:
-      type: object
-      additionalProperties: false
-      properties:
-        accessToken:
-          type: string
-          minLength: 1
-      required:
-      - accessToken

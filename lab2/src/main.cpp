@@ -15,15 +15,16 @@
 #include <handlers/refresh_token_handler.hpp>
 #include <handlers/register_handler.hpp>
 #include <handlers/schedule_viewing_handler.hpp>
-#include <handlers/static_file_handler.hpp>
 #include <handlers/update_property_handler.hpp>
 #include <userver/clients/dns/component.hpp>
 #include <userver/clients/http/component_list.hpp>
 #include <userver/components/component.hpp>
 #include <userver/components/component_list.hpp>
+#include <userver/components/fs_cache.hpp>
 #include <userver/components/minimal_server_component_list.hpp>
 #include <userver/congestion_control/component.hpp>
 #include <userver/server/handlers/auth/auth_checker_factory.hpp>
+#include <userver/server/handlers/http_handler_static.hpp>
 #include <userver/server/handlers/ping.hpp>
 #include <userver/server/handlers/tests_control.hpp>
 #include <userver/testsuite/testsuite_support.hpp>
@@ -40,6 +41,7 @@ int main(int argc, char* argv[]) {
       userver::components::MinimalServerComponentList()
           .Append<userver::components::TestsuiteSupport>()
           .AppendComponentList(userver::clients::http::ComponentList())
+          .Append<userver::components::FsCache>("fs-cache-main")
           .Append<userver::clients::dns::Component>()
           .Append<userver::server::handlers::TestsControl>()
           .Append<userver::congestion_control::Component>()
@@ -66,10 +68,7 @@ int main(int argc, char* argv[]) {
           .Append<
               handlers::get_user_properties_handler::GetUserPropertiesHandler>()
           .Append<handlers::refresh_token_handler::RefreshTokenHandler>()
-          .Append<handlers::static_file_handler::StaticFileHandler>(
-              "openapi-schema")
-          .Append<handlers::static_file_handler::StaticFileHandler>(
-              "swagger-ui");
+          .Append<userver::server::handlers::HttpHandlerStatic>("docs-handler");
 
   return userver::utils::DaemonMain(argc, argv, component_list);
 }
