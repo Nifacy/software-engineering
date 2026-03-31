@@ -7,31 +7,27 @@ namespace handlers::get_user_handler {
 GetUserHandler::GetUserHandler(
     const userver::components::ComponentConfig& config,
     const userver::components::ComponentContext& context)
-    : HttpHandlerBase(config, context),
+    : SchemaHttpHandler(config, context),
       user_storage_(
           context.FindComponent<components::user_storage::UserStorage>()) {}
 
-std::string GetUserHandler::HandleRequestThrow(
+common::Response GetUserHandler::HandleRequestImpl(
     const userver::server::http::HttpRequest& request,
     userver::server::request::RequestContext& /* request_context */) const {
   const auto user_id = request.GetPathArg("id");
 
   try {
     const auto user = user_storage_.GetUser(user_id);
-
-    const api_gateway::schemas::user::UserInfo response_dom{
-        .id = user.id,
-        .login = user.login,
-        .firstName = user.firstName,
-        .lastName = user.lastName,
-    };
-
-    auto response_json =
-        userver::formats::json::ValueBuilder{response_dom}.ExtractValue();
-    return userver::formats::json::ToString(response_json);
-  } catch (components::user_storage::UserNotFound) {
-    request.SetResponseStatus(userver::server::http::HttpStatus::NotFound);
-    return "User with ID '" + user_id + "' not found";
+    return common::Response(userver::http::StatusCode::OK,
+                            api_gateway::schemas::user::UserInfo{
+                                .id = user.id,
+                                .login = user.login,
+                                .firstName = user.firstName,
+                                .lastName = user.lastName,
+                            });
+  } catch (const components::user_storage::UserNotFound&) {
+    throw common::HttpError(userver::http::StatusCode::NotFound,
+                            "User with ID '" + user_id + "' not found");
   }
 }
 

@@ -9,7 +9,7 @@ namespace handlers::delete_viewing_handler {
 DeleteViewingHandler::DeleteViewingHandler(
     const userver::components::ComponentConfig& config,
     const userver::components::ComponentContext& context)
-    : HttpHandlerBase(config, context),
+    : SchemaHttpHandler(config, context),
       viewing_storage_(
           context.FindComponent<components::viewing_storage::ViewingStorage>()),
       property_storage_(
@@ -32,7 +32,7 @@ std::optional<components::viewing_storage::Viewing> TryGetViewing(
   }
 }
 
-std::string DeleteViewingHandler::HandleRequestThrow(
+handlers::common::Response DeleteViewingHandler::HandleRequestImpl(
     const userver::server::http::HttpRequest& request,
     userver::server::request::RequestContext& request_context) const {
   const auto property_id = request.GetPathArg("property_id");
@@ -43,18 +43,20 @@ std::string DeleteViewingHandler::HandleRequestThrow(
       TryGetViewing(viewing_storage_, property_id, viewing_id);
 
   if (!maybe_property.has_value()) {
-    request.SetResponseStatus(userver::server::http::HttpStatus::NotFound);
-    return "Viewing with ID '" + viewing_id + "' not found";
+    throw handlers::common::HttpError(
+        userver::server::http::HttpStatus::NotFound,
+        "Viewing with ID '" + viewing_id + "' not found");
   }
 
   if ((*maybe_property).user_id != user_id) {
-    request.SetResponseStatus(userver::server::http::HttpStatus::kForbidden);
-    return "You don't have permission to delete this viewing";
+    throw handlers::common::HttpError(
+        userver::server::http::HttpStatus::kForbidden,
+        "You don't have permission to delete this viewing");
   }
 
   viewing_storage_.DeleteViewing(viewing_id);
-  request.SetResponseStatus(userver::server::http::HttpStatus::NoContent);
-  return "";
+  return handlers::common::Response(
+      userver::server::http::HttpStatus::NoContent);
 }
 
 }  // namespace handlers::delete_viewing_handler

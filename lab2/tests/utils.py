@@ -56,7 +56,7 @@ def get_auth_headers(token: str) -> dict[str, str]:
 
 
 async def register(service_client: pytest_userver.client.Client, payload: dict[str, Any] | None = None) -> str:
-    response = await service_client.post('/register', json=payload or get_register_payload())
+    response = await service_client.post('/api/v1/auth/register', json=payload or get_register_payload())
     assert response.status == 201
 
     return response.json()['accessToken']
@@ -64,7 +64,7 @@ async def register(service_client: pytest_userver.client.Client, payload: dict[s
 
 async def create_user(service_client: pytest_userver.client.Client, payload: dict[str, Any] | None = None) -> tuple[str, str]:
     token = await register(service_client, payload)
-    response = await service_client.get('/users/me', headers=get_auth_headers(token))
+    response = await service_client.get('/api/v1/users/me', headers=get_auth_headers(token))
     assert response.status == 200
 
     return token, response.json()['id']
@@ -75,24 +75,24 @@ async def create_property(service_client: pytest_userver.client.Client, token: s
         token, _ = await create_user(service_client)
 
     creation_payload = payload or get_property_creation_payload()
-    response = await service_client.post('/properties', json=creation_payload, headers=get_auth_headers(token))
+    response = await service_client.post('/api/v1/properties', json=creation_payload, headers=get_auth_headers(token))
     assert response.status == 201
 
     return response.json()
 
 
 async def update_property(service_client: pytest_userver.client.Client, token: str, property_id: str, payload: dict[str, Any]) -> None:
-    response = await service_client.patch(f'/properties/{property_id}', json=payload, headers=get_auth_headers(token))
+    response = await service_client.patch(f'/api/v1/properties/{property_id}', json=payload, headers=get_auth_headers(token))
     assert response.status == 200
 
 
 async def schedule_viewing(service_client: pytest_userver.client.Client, token: str, property_id: str, payload: dict[str, Any] | None = None) -> str:
     payload = payload or get_schedule_viewing_payload(datetime.date(year=2026, month=2, day=24) + datetime.timedelta(days=random.randint(1, 1_000)))
-    response = await service_client.post(f'/properties/{property_id}/viewings', json=payload, headers=get_auth_headers(token))
+    response = await service_client.post(f'/api/v1/properties/{property_id}/viewings', json=payload, headers=get_auth_headers(token))
     assert response.status == 201
     return response.json()['id']
 
 
 async def delete_viewing(service_client: pytest_userver.client.Client, token: str, property_id: str, viewing_id: str) -> None:
-    response = await service_client.delete(f'/properties/{property_id}/viewings/{viewing_id}', headers=get_auth_headers(token))
+    response = await service_client.delete(f'/api/v1/properties/{property_id}/viewings/{viewing_id}', headers=get_auth_headers(token))
     assert response.status == 204

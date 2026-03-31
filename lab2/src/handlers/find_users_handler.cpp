@@ -7,34 +7,21 @@ namespace handlers::find_users_handler {
 FindUsersHandler::FindUsersHandler(
     const userver::components::ComponentConfig& config,
     const userver::components::ComponentContext& context)
-    : HttpHandlerBase(config, context),
+    : SchemaHttpHandler(config, context),
       user_storage_(
           context.FindComponent<components::user_storage::UserStorage>()) {}
 
-std::optional<std::string> TryGetFilterValue(
-    const userver::server::http::HttpRequest& request,
-    const std::string& arg_name) {
-  const auto value = request.GetArg(arg_name);
-  if (value.empty()) {
-    return std::nullopt;
-  }
-  return value;
-}
-
-std::string FindUsersHandler::HandleRequestThrow(
+common::Response FindUsersHandler::HandleRequestImpl(
     const userver::server::http::HttpRequest& request,
     userver::server::request::RequestContext&) const {
-  const auto user_ids =
-      user_storage_.FindUsers(TryGetFilterValue(request, "login"),
-                              TryGetFilterValue(request, "firstName"),
-                              TryGetFilterValue(request, "lastName"));
+  const auto user_ids = user_storage_.FindUsers(TryGetArg(request, "login"),
+                                                TryGetArg(request, "firstName"),
+                                                TryGetArg(request, "lastName"));
 
-  const api_gateway::schemas::user::UserIds response_dom{.userIds = user_ids};
-  auto response_json =
-      userver::formats::json::ValueBuilder{response_dom}.ExtractValue();
-
-  request.SetResponseStatus(userver::server::http::HttpStatus::OK);
-  return userver::formats::json::ToString(response_json);
+  return common::Response(userver::http::StatusCode::OK,
+                          api_gateway::schemas::user::UserIds{
+                              .userIds = user_ids,
+                          });
 }
 
 }  // namespace handlers::find_users_handler

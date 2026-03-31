@@ -16,7 +16,7 @@ async def test_returns_current_user(service_client: pytest_userver.client.Client
     payload = utils.get_register_payload()
     token = await utils.register(service_client, payload)
 
-    response = await service_client.get('/users/me', headers=utils.get_auth_headers(token))
+    response = await service_client.get('/api/v1/users/me', headers=utils.get_auth_headers(token))
     assert response.status == 200
 
     user_info = response.json()
@@ -29,7 +29,7 @@ async def test_returns_current_user(service_client: pytest_userver.client.Client
 
 
 async def test_returns_current_user_not_authorized(service_client: pytest_userver.client.Client):
-    response = await service_client.get('/users/me')
+    response = await service_client.get('/api/v1/users/me')
     assert response.status == 400
 
 
@@ -39,7 +39,7 @@ async def test_returns_user_by_id(service_client: pytest_userver.client.Client):
     payload = utils.get_register_payload()
     _, user_id = await utils.create_user(service_client, payload)
 
-    response = await service_client.get(f'/users/{user_id}')
+    response = await service_client.get(f'/api/v1/users/{user_id}')
     assert response.status == 200
 
     user_info = response.json()
@@ -52,7 +52,7 @@ async def test_returns_user_by_id(service_client: pytest_userver.client.Client):
 
 
 async def test_gets_unknown_user(service_client: pytest_userver.client.Client):
-    response = await service_client.get('/users/unknown')
+    response = await service_client.get('/api/v1/users/unknown')
     assert response.status == 404
 
 
@@ -79,7 +79,7 @@ async def test_finds_users(service_client: pytest_userver.client.Client, filters
         for payload in register_payloads
     ]
 
-    response = await service_client.get('/users', params=filters)
+    response = await service_client.get('/api/v1/users', params=filters)
     assert response.status == 200
 
     found_user_ids = {user_id for user_id in response.json()['userIds'] if user_id in user_ids}

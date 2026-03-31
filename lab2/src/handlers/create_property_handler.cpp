@@ -1,3 +1,4 @@
+#include <handlers/common/schema_http_handler.hpp>
 #include <handlers/create_property_handler.hpp>
 #include <schemas/property.hpp>
 #include <userver/components/component_context.hpp>
@@ -5,10 +6,15 @@
 
 namespace handlers::create_property_handler {
 
+using CreatePropertyRequestBody =
+    api_gateway::schemas::property::CreatePropertyRequestBody;
+
+using PropertyStatus = api_gateway::schemas::property::PropertyStatus;
+
 CreatePropertyHandler::CreatePropertyHandler(
     const userver::components::ComponentConfig& config,
     const userver::components::ComponentContext& context)
-    : HttpHandlerBase(config, context),
+    : SchemaHttpHandler(config, context),
       user_storage_(
           context.FindComponent<components::user_storage::UserStorage>()),
       property_storage_(
@@ -16,28 +22,21 @@ CreatePropertyHandler::CreatePropertyHandler(
               .FindComponent<components::property_storage::PropertyStorage>()) {
 }
 
-api_gateway::schemas::property::CreatePropertyRequestBody GetRequestBody(
-    const userver::server::http::HttpRequest& request) {
-  const auto body_raw = request.RequestBody();
-  const auto body_json = userver::formats::json::FromString(body_raw);
-  return body_json
-      .As<api_gateway::schemas::property::CreatePropertyRequestBody>();
-}
-
-api_gateway::schemas::property::PropertyStatus GetPropertyStatus(
+PropertyStatus SerializePropertyStatus(
     const components::property_storage::PropertyStatus& status) {
   switch (status) {
     case components::property_storage::PropertyStatus::Active:
-      return api_gateway::schemas::property::PropertyStatus::kActive;
+      return PropertyStatus::kActive;
     case components::property_storage::PropertyStatus::Sold:
-      return api_gateway::schemas::property::PropertyStatus::kSold;
+      return PropertyStatus::kSold;
   }
 }
 
-std::string CreatePropertyHandler::HandleRequestThrow(
+handlers::common::Response CreatePropertyHandler::HandleRequestImpl(
     const userver::server::http::HttpRequest& request,
     userver::server::request::RequestContext& request_context) const {
-  const auto request_body = GetRequestBody(request);
+  const auto request_body =
+      ParseRequestBody<CreatePropertyRequestBody>(request);
   const auto user_id = request_context.GetData<std::string>("user_id");
 
   const auto property_id = userver::utils::generators::GenerateUuid();
@@ -61,25 +60,22 @@ std::string CreatePropertyHandler::HandleRequestThrow(
   user.propertyIds.emplace(property_id);
   user_storage_.UpdateUser(user);
 
-  const api_gateway::schemas::property::Property response_dom{
-      .id = property_id,
-      .address =
-          {
-              .country = new_property.address.country,
-              .city = new_property.address.city,
-              .street = new_property.address.street,
-              .building = (std::int32_t)new_property.address.building,
-              .apartment = (std::int32_t)new_property.address.apartment,
-          },
-      .ownerId = user_id,
-      .status = GetPropertyStatus(new_property.status),
-      .price = new_property.price,
-  };
-
-  request.SetResponseStatus(userver::server::http::HttpStatus::Created);
-  auto response_json =
-      userver::formats::json::ValueBuilder{response_dom}.ExtractValue();
-  return userver::formats::json::ToString(response_json);
+  return handlers::common::Response(
+      userver::server::http::HttpStatus::Created,
+      api_gateway::schemas::property::Property{
+          .id = property_id,
+          .address =
+              {
+                  .country = new_property.address.country,
+                  .city = new_property.address.city,
+                  .street = new_property.address.street,
+                  .building = (std::int32_t)new_property.address.building,
+                  .apartment = (std::int32_t)new_property.address.apartment,
+              },
+          .ownerId = user_id,
+          .status = SerializePropertyStatus(new_property.status),
+          .price = new_property.price,
+      });
 }
 
 }  // namespace handlers::create_property_handler

@@ -5,14 +5,6 @@
 
 namespace handlers::get_user_viewings_handler {
 
-GetUserViewingsHandler::GetUserViewingsHandler(
-    const userver::components::ComponentConfig& config,
-    const userver::components::ComponentContext& context)
-    : HttpHandlerBase(config, context),
-      viewing_storage_(
-          context
-              .FindComponent<components::viewing_storage::ViewingStorage>()) {}
-
 api_gateway::schemas::user::UserViewing SerializeViewing(
     const std::string& viewing_id,
     const components::viewing_storage::Viewing& viewing) {
@@ -23,8 +15,16 @@ api_gateway::schemas::user::UserViewing SerializeViewing(
   };
 }
 
-std::string GetUserViewingsHandler::HandleRequestThrow(
-    const userver::server::http::HttpRequest& request,
+GetUserViewingsHandler::GetUserViewingsHandler(
+    const userver::components::ComponentConfig& config,
+    const userver::components::ComponentContext& context)
+    : SchemaHttpHandler(config, context),
+      viewing_storage_(
+          context
+              .FindComponent<components::viewing_storage::ViewingStorage>()) {}
+
+common::Response GetUserViewingsHandler::HandleRequestImpl(
+    const userver::server::http::HttpRequest&,
     userver::server::request::RequestContext& request_context) const {
   const auto user_id = request_context.GetData<std::string>("user_id");
   api_gateway::schemas::user::UserViewingList response_dom;
@@ -35,11 +35,7 @@ std::string GetUserViewingsHandler::HandleRequestThrow(
     response_dom.viewings.push_back(SerializeViewing(viewing_id, viewing));
   }
 
-  const auto response_json =
-      userver::formats::json::ValueBuilder{response_dom}.ExtractValue();
-
-  request.SetResponseStatus(userver::server::http::HttpStatus::OK);
-  return userver::formats::json::ToString(response_json);
+  return common::Response(userver::http::StatusCode::OK, response_dom);
 }
 
 }  // namespace handlers::get_user_viewings_handler

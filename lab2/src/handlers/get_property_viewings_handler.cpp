@@ -9,7 +9,7 @@ namespace handlers::get_property_viewings_handler {
 GetPropertyViewingsHandler::GetPropertyViewingsHandler(
     const userver::components::ComponentConfig& config,
     const userver::components::ComponentContext& context)
-    : HttpHandlerBase(config, context),
+    : SchemaHttpHandler(config, context),
       viewing_storage_(
           context.FindComponent<components::viewing_storage::ViewingStorage>()),
       property_storage_(
@@ -27,7 +27,7 @@ api_gateway::schemas::property::PropertyViewing SerializeViewing(
   };
 }
 
-std::string GetPropertyViewingsHandler::HandleRequestThrow(
+common::Response GetPropertyViewingsHandler::HandleRequestImpl(
     const userver::server::http::HttpRequest& request,
     userver::server::request::RequestContext& /* request_context */) const {
   const auto property_id = request.GetPathArg("id");
@@ -36,8 +36,8 @@ std::string GetPropertyViewingsHandler::HandleRequestThrow(
   try {
     property_storage_.GetProperty(property_id);
   } catch (const components::property_storage::PropertyNotFound&) {
-    request.SetResponseStatus(userver::server::http::HttpStatus::NotFound);
-    return "Property with ID '" + property_id + "' not found";
+    throw common::HttpError(userver::http::StatusCode::NotFound,
+                            "Property with ID '" + property_id + "' not found");
   }
 
   for (const auto& viewing_id :
@@ -46,11 +46,7 @@ std::string GetPropertyViewingsHandler::HandleRequestThrow(
     response_dom.viewings.push_back(SerializeViewing(viewing_id, viewing));
   }
 
-  const auto response_json =
-      userver::formats::json::ValueBuilder{response_dom}.ExtractValue();
-
-  request.SetResponseStatus(userver::http::StatusCode::OK);
-  return userver::formats::json::ToString(response_json);
+  return common::Response(userver::http::StatusCode::OK, response_dom);
 }
 
 }  // namespace handlers::get_property_viewings_handler
