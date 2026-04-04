@@ -284,3 +284,232 @@ FROM properties as p
 JOIN ADDRESSES a ON a.id = p.address_id
 WHERE p.owner_id = $1;
 ```
+
+# Анализ запросов
+
+**Запрос:**
+```
+EXPLAIN ANALYZE SELECT user_id, verify_secret
+FROM credentials 
+WHERE key = 'user_buzz_31fef485-65a9-4f3f-bc90-65927279f1c9'
+LIMIT 1;
+```
+
+EXPLAIN:
+```
+Limit (cost=0.28..8.29 rows=1 width=53)
+```
+
+EXPLAIN ANALYZE:
+```
+Limit (cost=0.28..8.29 rows=1 width=53) (actual time=0.024..0.025 rows=1.00 loops=1)
+```
+
+Запрос:
+```
+SELECT id
+FROM users
+WHERE (login ILIKE '%user_%')
+  AND (first_name ILIKE '%%')
+  AND (last_name ILIKE '%%');
+```
+
+explain:
+```
+Seq Scan on users (cost=0.00..1233.00 rows=39139 width=16)
+```
+
+explain analyze:
+```
+Seq Scan on users (cost=0.00..1265.50 rows=40996 width=16) (actual time=0.012..72.174 rows=41000.00 loops=1)
+```
+
+---
+
+Запрос:
+```
+SELECT id, login, first_name, last_name
+FROM users
+WHERE (id = '31fef485-65a9-4f3f-bc90-65927279f1c9')
+```
+
+explain:
+```
+Index Scan using users_pkey on users (cost=0.29..8.31 rows=1 width=76)
+```
+
+explain analyze:
+```
+Index Scan using users_pkey on users (cost=0.29..8.31 rows=1 width=76) (actual time=0.017..0.018 rows=1.00 loops=1)
+```
+
+---
+
+Query:
+
+SELECT p.id
+FROM properties p
+JOIN addresses a ON p.address_id = a.id
+WHERE (a.city ILIKE '%gr%')
+  AND (p.price >= 0)
+  AND (p.price <= 2000);
+
+
+Explain:
+Hash Join  (cost=962.50..2020.31 rows=736 width=16)
+  Hash Cond: (p.address_id = a.id)
+  ->  Seq Scan on properties p  (cost=0.00..1038.00 rows=7547 width=32)
+        Filter: ((price >= 0) AND (price <= 2000))
+  ->  Hash  (cost=912.50..912.50 rows=4000 width=16)
+        ->  Seq Scan on addresses a  (cost=0.00..912.50 rows=4000 width=16)
+              Filter: ((city)::text ~~* '%gr%'::text)
+
+Analyze:
+Hash Join  (cost=962.50..2020.31 rows=736 width=16) (actual time=27.983..32.594 rows=722.00 loops=1)
+  Hash Cond: (p.address_id = a.id)
+  Buffers: shared hit=823
+  ->  Seq Scan on properties p  (cost=0.00..1038.00 rows=7547 width=32) (actual time=0.013..3.744 rows=7596.00 loops=1)
+        Filter: ((price >= 0) AND (price <= 2000))
+        Rows Removed by Filter: 33404
+        Buffers: shared hit=423
+  ->  Hash  (cost=912.50..912.50 rows=4000 width=16) (actual time=27.944..27.945 rows=4041.00 loops=1)
+        Buckets: 4096  Batches: 1  Memory Usage: 222kB
+        Buffers: shared hit=400
+        ->  Seq Scan on addresses a  (cost=0.00..912.50 rows=4000 width=16) (actual time=0.014..26.775 rows=4041.00 loops=1)
+              Filter: ((city)::text ~~* '%gr%'::text)
+              Rows Removed by Filter: 36959
+              Buffers: shared hit=400
+Planning:
+  Buffers: shared hit=12
+Planning Time: 0.119 ms
+Execution Time: 32.643 ms
+
+---
+
+Query:
+
+SELECT 
+  p.id AS property_id,
+  p.owner_id,
+  p.status,
+  p.price,
+  a.country as "address.country",
+  a.city as "address.city",
+  a.street as "address.street",
+  a.building as "address.building",
+  a.apartment as "address.apartment"
+FROM properties p
+JOIN addresses a ON p.address_id = a.id
+WHERE p.id = '9010bad5-369d-4579-94f3-c1e3a607c641';
+
+
+Explain:
+Nested Loop  (cost=0.58..16.62 rows=1 width=72)
+  ->  Index Scan using properties_pkey on properties p  (cost=0.29..8.31 rows=1 width=56)
+        Index Cond: (id = '9010bad5-369d-4579-94f3-c1e3a607c641'::uuid)
+  ->  Index Scan using addresses_pkey on addresses a  (cost=0.29..8.31 rows=1 width=48)
+        Index Cond: (id = p.address_id)
+
+Analyze:
+Nested Loop  (cost=0.58..16.62 rows=1 width=72) (actual time=0.075..0.076 rows=1.00 loops=1)
+  Buffers: shared hit=6
+  ->  Index Scan using properties_pkey on properties p  (cost=0.29..8.31 rows=1 width=56) (actual time=0.049..0.049 rows=1.00 loops=1)
+        Index Cond: (id = '9010bad5-369d-4579-94f3-c1e3a607c641'::uuid)
+        Index Searches: 1
+        Buffers: shared hit=3
+  ->  Index Scan using addresses_pkey on addresses a  (cost=0.29..8.31 rows=1 width=48) (actual time=0.023..0.024 rows=1.00 loops=1)
+        Index Cond: (id = p.address_id)
+        Index Searches: 1
+        Buffers: shared hit=3
+Planning:
+  Buffers: shared hit=12
+Planning Time: 0.143 ms
+Execution Time: 0.087 ms
+
+---
+
+Query:
+
+SELECT id, user_id, viewing_date
+FROM viewings
+WHERE property_id = '7034511b-e1f6-4058-b9f1-17dc1d54b705';
+
+
+Explain:
+Bitmap Heap Scan on viewings  (cost=4.31..11.92 rows=2 width=36)
+  Recheck Cond: (property_id = '7034511b-e1f6-4058-b9f1-17dc1d54b705'::uuid)
+  ->  Bitmap Index Scan on unique_date_per_property  (cost=0.00..4.30 rows=2 width=0)
+        Index Cond: (property_id = '7034511b-e1f6-4058-b9f1-17dc1d54b705'::uuid)
+
+Analyze:
+Bitmap Heap Scan on viewings  (cost=4.31..11.92 rows=2 width=36) (actual time=0.072..0.072 rows=0.00 loops=1)
+  Recheck Cond: (property_id = '7034511b-e1f6-4058-b9f1-17dc1d54b705'::uuid)
+  Buffers: shared hit=2
+  ->  Bitmap Index Scan on unique_date_per_property  (cost=0.00..4.30 rows=2 width=0) (actual time=0.062..0.062 rows=0.00 loops=1)
+        Index Cond: (property_id = '7034511b-e1f6-4058-b9f1-17dc1d54b705'::uuid)
+        Index Searches: 1
+        Buffers: shared hit=2
+Planning Time: 0.034 ms
+Execution Time: 0.088 ms
+
+---
+
+Query:
+
+SELECT id, property_id, viewing_date
+FROM viewings
+WHERE user_id = '31fef485-65a9-4f3f-bc90-65927279f1c9';
+
+
+Explain:
+Seq Scan on viewings  (cost=0.00..935.50 rows=2 width=36)
+  Filter: (user_id = '31fef485-65a9-4f3f-bc90-65927279f1c9'::uuid)
+
+Analyze:
+Seq Scan on viewings  (cost=0.00..935.50 rows=2 width=36) (actual time=3.595..3.596 rows=0.00 loops=1)
+  Filter: (user_id = '31fef485-65a9-4f3f-bc90-65927279f1c9'::uuid)
+  Rows Removed by Filter: 41000
+  Buffers: shared hit=423
+Planning Time: 0.056 ms
+Execution Time: 3.610 ms
+
+---
+
+Query:
+
+SELECT
+    p.id,
+    p.status,
+    p.price,
+    a.country as "address.country",
+    a.city as "address.city",
+    a.street as "address.street",
+    a.building as "address.building",
+    a.apartment as "address.apartment"
+FROM properties as p
+JOIN ADDRESSES a ON a.id = p.address_id
+WHERE p.owner_id = '31fef485-65a9-4f3f-bc90-65927279f1c9';
+
+
+Explain:
+Nested Loop  (cost=0.29..943.81 rows=1 width=56)
+  ->  Seq Scan on properties p  (cost=0.00..935.50 rows=1 width=40)
+        Filter: (owner_id = '31fef485-65a9-4f3f-bc90-65927279f1c9'::uuid)
+  ->  Index Scan using addresses_pkey on addresses a  (cost=0.29..8.31 rows=1 width=48)
+        Index Cond: (id = p.address_id)
+
+Analyze:
+Nested Loop  (cost=0.29..943.81 rows=1 width=56) (actual time=0.029..2.625 rows=1.00 loops=1)
+  Buffers: shared hit=426
+  ->  Seq Scan on properties p  (cost=0.00..935.50 rows=1 width=40) (actual time=0.015..2.611 rows=1.00 loops=1)
+        Filter: (owner_id = '31fef485-65a9-4f3f-bc90-65927279f1c9'::uuid)
+        Rows Removed by Filter: 40999
+        Buffers: shared hit=423
+  ->  Index Scan using addresses_pkey on addresses a  (cost=0.29..8.31 rows=1 width=48) (actual time=0.009..0.009 rows=1.00 loops=1)
+        Index Cond: (id = p.address_id)
+        Index Searches: 1
+        Buffers: shared hit=3
+Planning:
+  Buffers: shared hit=12
+Planning Time: 0.120 ms
+Execution Time: 2.637 ms

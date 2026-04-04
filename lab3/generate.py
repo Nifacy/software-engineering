@@ -121,7 +121,7 @@ def generate_property(owner: User) -> Property:
 
 def generate_viewing(users: list[User], properties: list[Property]) -> Viewing:
     start_date = datetime.date(year=2024, month=1, day=1)
-    view_date = start_date + datetime.timedelta(days=random.randint(1, 365 * 2))
+    view_date = start_date + datetime.timedelta(days=random.randint(1, 365 * 200))
 
     return Viewing(
         id=uuid.uuid4(),
@@ -132,14 +132,13 @@ def generate_viewing(users: list[User], properties: list[Property]) -> Viewing:
 
 
 with psycopg2.connect('dbname=postgres user=postgres password=postgres host=localhost port=5433') as conn:
-    SIZE = 1_000
+    SIZE = 40_000
+    users = [generate_user() for _ in range(SIZE)]
+    credentials = [generate_credentials(user) for user in users]
+    properties = [generate_property(user) for user in users]
+    viewings = [generate_viewing(users, properties) for _ in range(SIZE)]
 
     with conn.cursor() as cursor:
-        users = [generate_user() for _ in range(SIZE)]
-        credentials = [generate_credentials(user) for user in users]
-        properties = [generate_property(user) for user in users]
-        viewings = [generate_viewing(users, properties) for _ in range(SIZE)]
-
         psycopg2.extras.execute_values(
             cursor,
             "INSERT INTO users (id, login, first_name, last_name) VALUES %s",
@@ -149,6 +148,7 @@ with psycopg2.connect('dbname=postgres user=postgres password=postgres host=loca
             ]
         )
 
+    with conn.cursor() as cursor:
         psycopg2.extras.execute_values(
             cursor,
             "INSERT INTO credentials (key, verify_secret, user_id) VALUES %s",
@@ -158,6 +158,7 @@ with psycopg2.connect('dbname=postgres user=postgres password=postgres host=loca
             ]
         )
 
+    with conn.cursor() as cursor:
         psycopg2.extras.execute_values(
             cursor,
             "INSERT INTO addresses (id, country, city, street, building, apartment) VALUES %s",
@@ -167,6 +168,7 @@ with psycopg2.connect('dbname=postgres user=postgres password=postgres host=loca
             ]
         )
 
+    with conn.cursor() as cursor:
         psycopg2.extras.execute_values(
             cursor,
             "INSERT INTO properties (id, owner_id, address_id, status, price) VALUES %s",
@@ -176,6 +178,7 @@ with psycopg2.connect('dbname=postgres user=postgres password=postgres host=loca
             ]
         )
 
+    with conn.cursor() as cursor:
         psycopg2.extras.execute_values(
             cursor,
             "INSERT INTO viewings (id, user_id, property_id, viewing_date) VALUES %s",
