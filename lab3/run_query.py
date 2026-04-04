@@ -2,18 +2,10 @@ import psycopg2
 
 
 QUERY = '''
-SELECT
-    p.id,
-    p.status,
-    p.price,
-    a.country as "address.country",
-    a.city as "address.city",
-    a.street as "address.street",
-    a.building as "address.building",
-    a.apartment as "address.apartment"
-FROM properties as p
-JOIN ADDRESSES a ON a.id = p.address_id
-WHERE p.owner_id = '31fef485-65a9-4f3f-bc90-65927279f1c9';
+SELECT user_id, verify_secret
+FROM credentials 
+WHERE key = 'user_buzz_31fef485-65a9-4f3f-bc90-65927279f1c9'
+LIMIT 1;
 '''
 
 

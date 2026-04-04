@@ -287,61 +287,71 @@ WHERE p.owner_id = $1;
 
 # Анализ запросов
 
-**Запрос:**
-```
-EXPLAIN ANALYZE SELECT user_id, verify_secret
+Query:
+
+SELECT user_id, verify_secret
 FROM credentials 
 WHERE key = 'user_buzz_31fef485-65a9-4f3f-bc90-65927279f1c9'
 LIMIT 1;
-```
 
-EXPLAIN:
-```
-Limit (cost=0.28..8.29 rows=1 width=53)
-```
 
-EXPLAIN ANALYZE:
-```
-Limit (cost=0.28..8.29 rows=1 width=53) (actual time=0.024..0.025 rows=1.00 loops=1)
-```
+Explain:
+Limit  (cost=0.41..8.43 rows=1 width=53)
+  ->  Index Scan using credentials_pkey on credentials  (cost=0.41..8.43 rows=1 width=53)
+        Index Cond: ((key)::text = 'user_buzz_31fef485-65a9-4f3f-bc90-65927279f1c9'::text)
 
-Запрос:
-```
+Analyze:
+Limit  (cost=0.41..8.43 rows=1 width=53) (actual time=0.104..0.104 rows=1.00 loops=1)
+  Buffers: shared hit=4
+  ->  Index Scan using credentials_pkey on credentials  (cost=0.41..8.43 rows=1 width=53) (actual time=0.103..0.103 rows=1.00 loops=1)
+        Index Cond: ((key)::text = 'user_buzz_31fef485-65a9-4f3f-bc90-65927279f1c9'::text)
+        Index Searches: 1
+        Buffers: shared hit=4
+Planning Time: 0.062 ms
+Execution Time: 0.115 ms
+
+---
+
+Query:
+
 SELECT id
 FROM users
 WHERE (login ILIKE '%user_%')
   AND (first_name ILIKE '%%')
   AND (last_name ILIKE '%%');
-```
 
-explain:
-```
-Seq Scan on users (cost=0.00..1233.00 rows=39139 width=16)
-```
 
-explain analyze:
-```
-Seq Scan on users (cost=0.00..1265.50 rows=40996 width=16) (actual time=0.012..72.174 rows=41000.00 loops=1)
-```
+Explain:
+Seq Scan on users  (cost=0.00..1265.50 rows=40996 width=16)
+  Filter: (((login)::text ~~* '%user_%'::text) AND ((first_name)::text ~~* '%%'::text) AND ((last_name)::text ~~* '%%'::text))
+
+Analyze:
+Seq Scan on users  (cost=0.00..1265.50 rows=40996 width=16) (actual time=0.052..73.527 rows=41000.00 loops=1)
+  Filter: (((login)::text ~~* '%user_%'::text) AND ((first_name)::text ~~* '%%'::text) AND ((last_name)::text ~~* '%%'::text))
+  Buffers: shared hit=548
+Planning Time: 0.136 ms
+Execution Time: 74.805 ms
 
 ---
 
-Запрос:
-```
+Query:
+
 SELECT id, login, first_name, last_name
 FROM users
 WHERE (id = '31fef485-65a9-4f3f-bc90-65927279f1c9')
-```
 
-explain:
-```
-Index Scan using users_pkey on users (cost=0.29..8.31 rows=1 width=76)
-```
 
-explain analyze:
-```
-Index Scan using users_pkey on users (cost=0.29..8.31 rows=1 width=76) (actual time=0.017..0.018 rows=1.00 loops=1)
-```
+Explain:
+Index Scan using users_pkey on users  (cost=0.29..8.31 rows=1 width=76)
+  Index Cond: (id = '31fef485-65a9-4f3f-bc90-65927279f1c9'::uuid)
+
+Analyze:
+Index Scan using users_pkey on users  (cost=0.29..8.31 rows=1 width=76) (actual time=0.063..0.064 rows=1.00 loops=1)
+  Index Cond: (id = '31fef485-65a9-4f3f-bc90-65927279f1c9'::uuid)
+  Index Searches: 1
+  Buffers: shared hit=3
+Planning Time: 0.033 ms
+Execution Time: 0.071 ms
 
 ---
 
