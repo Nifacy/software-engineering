@@ -1,9 +1,10 @@
+import contextlib
 from dataclasses import dataclass
 import datetime
 import enum
 import random
 import string
-from typing import Final
+from typing import Final, Iterable, Iterator, Sequence
 import psycopg2
 import uuid
 import psycopg2.extras
@@ -131,59 +132,88 @@ def generate_viewing(users: list[User], properties: list[Property]) -> Viewing:
     )
 
 
+def progress_log[T](name: str, items: Sequence[T]) -> Iterator[T]:
+    size = len(items)
+
+    for index, el in enumerate(items):
+        print(f'\r{name}: [{index + 1} / {size}]', end='')
+        yield el
+    
+    print()
+
+
+
+@contextlib.contextmanager
+def log_action(name: str) -> Iterator[None]:
+    print(f'{name} ...')
+
+    try:
+        yield
+    except:
+        print(f'{name} ... failed')
+        raise
+    else:
+        print(f'{name} ... ok')
+
+
 with psycopg2.connect('dbname=postgres user=postgres password=postgres host=localhost port=5433') as conn:
     SIZE = 40_000
-    users = [generate_user() for _ in range(SIZE)]
-    credentials = [generate_credentials(user) for user in users]
-    properties = [generate_property(user) for user in users]
-    viewings = [generate_viewing(users, properties) for _ in range(SIZE)]
+    users = [generate_user() for _ in progress_log('Generate users', range(SIZE))]
+    credentials = [generate_credentials(user) for user in progress_log('Generate credentials', users)]
+    properties = [generate_property(user) for user in progress_log('Generate properties', users)]
+    viewings = [generate_viewing(users, properties) for _ in progress_log('Generate viewings', range(SIZE))]
 
-    with conn.cursor() as cursor:
-        psycopg2.extras.execute_values(
-            cursor,
-            "INSERT INTO users (id, login, first_name, last_name) VALUES %s",
-            [
-                (str(user.id), user.login, user.first_name, user.last_name)
-                for user in users
-            ]
-        )
+    with log_action('Write users'):
+        with conn.cursor() as cursor:
+            psycopg2.extras.execute_values(
+                cursor,
+                "INSERT INTO users (id, login, first_name, last_name) VALUES %s",
+                [
+                    (str(user.id), user.login, user.first_name, user.last_name)
+                    for user in users
+                ]
+            )
 
-    with conn.cursor() as cursor:
-        psycopg2.extras.execute_values(
-            cursor,
-            "INSERT INTO credentials (key, verify_secret, user_id) VALUES %s",
-            [
-                (el.key, el.secret, str(el.user_id))
-                for el in credentials
-            ]
-        )
+    with log_action('Write credentials'):
+        with conn.cursor() as cursor:
+            psycopg2.extras.execute_values(
+                cursor,
+                "INSERT INTO credentials (key, verify_secret, user_id) VALUES %s",
+                [
+                    (el.key, el.secret, str(el.user_id))
+                    for el in credentials
+                ]
+            )
 
-    with conn.cursor() as cursor:
-        psycopg2.extras.execute_values(
-            cursor,
-            "INSERT INTO addresses (id, country, city, street, building, apartment) VALUES %s",
-            [
-                (str(address.id), address.country, address.city, address.street, address.building, address.apartment)
-                for address in map(lambda p: p.address, properties)
-            ]
-        )
+    with log_action('Write addresses'):
+        with conn.cursor() as cursor:
+            psycopg2.extras.execute_values(
+                cursor,
+                "INSERT INTO addresses (id, country, city, street, building, apartment) VALUES %s",
+                [
+                    (str(address.id), address.country, address.city, address.street, address.building, address.apartment)
+                    for address in map(lambda p: p.address, properties)
+                ]
+            )
 
-    with conn.cursor() as cursor:
-        psycopg2.extras.execute_values(
-            cursor,
-            "INSERT INTO properties (id, owner_id, address_id, status, price) VALUES %s",
-            [
-                (str(property.id), str(property.owner_id), str(property.address.id), property.status.value, property.price)
-                for property in properties
-            ]
-        )
+    with log_action('Write properties'):
+        with conn.cursor() as cursor:
+            psycopg2.extras.execute_values(
+                cursor,
+                "INSERT INTO properties (id, owner_id, address_id, status, price) VALUES %s",
+                [
+                    (str(property.id), str(property.owner_id), str(property.address.id), property.status.value, property.price)
+                    for property in properties
+                ]
+            )
 
-    with conn.cursor() as cursor:
-        psycopg2.extras.execute_values(
-            cursor,
-            "INSERT INTO viewings (id, user_id, property_id, viewing_date) VALUES %s",
-            [
-                (str(viewing.id), str(viewing.user_id), str(viewing.property_id), viewing.date.strftime('%Y-%m-%d'))
-                for viewing in viewings
-            ]
-        )
+    with log_action('Write viewings'):
+        with conn.cursor() as cursor:
+            psycopg2.extras.execute_values(
+                cursor,
+                "INSERT INTO viewings (id, user_id, property_id, viewing_date) VALUES %s",
+                [
+                    (str(viewing.id), str(viewing.user_id), str(viewing.property_id), viewing.date.strftime('%Y-%m-%d'))
+                    for viewing in viewings
+                ]
+            )

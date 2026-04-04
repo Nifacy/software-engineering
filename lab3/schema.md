@@ -316,21 +316,23 @@ Query:
 
 SELECT id
 FROM users
-WHERE (login ILIKE '%user_%')
-  AND (first_name ILIKE '%%')
-  AND (last_name ILIKE '%%');
+WHERE (login ILIKE '%%' || %(login)s || '%%')
+  AND (first_name ILIKE '%%' || %(first_name)s || '%%')
+  AND (last_name ILIKE '%%' || %(last_name)s || '%%');
 
+
+Variables: {'login': 'user_', 'first_name': '', 'last_name': ''}
 
 Explain:
 Seq Scan on users  (cost=0.00..1265.50 rows=40996 width=16)
   Filter: (((login)::text ~~* '%user_%'::text) AND ((first_name)::text ~~* '%%'::text) AND ((last_name)::text ~~* '%%'::text))
 
 Analyze:
-Seq Scan on users  (cost=0.00..1265.50 rows=40996 width=16) (actual time=0.052..73.527 rows=41000.00 loops=1)
+Seq Scan on users  (cost=0.00..1265.50 rows=40996 width=16) (actual time=0.019..73.889 rows=41000.00 loops=1)
   Filter: (((login)::text ~~* '%user_%'::text) AND ((first_name)::text ~~* '%%'::text) AND ((last_name)::text ~~* '%%'::text))
   Buffers: shared hit=548
-Planning Time: 0.136 ms
-Execution Time: 74.805 ms
+Planning Time: 0.135 ms
+Execution Time: 75.211 ms
 
 ---
 
@@ -523,3 +525,161 @@ Planning:
   Buffers: shared hit=12
 Planning Time: 0.120 ms
 Execution Time: 2.637 ms
+
+## Оптимизации
+
+Возьмем запрос
+
+```
+SELECT id
+FROM users
+WHERE (login ILIKE '%%' || %(login)s || '%%')
+  AND (first_name ILIKE '%%' || %(first_name)s || '%%')
+  AND (last_name ILIKE '%%' || %(last_name)s || '%%');
+```
+
+Видно, что всегда искать по маске неоптимально. Пробуем `NULL` использовать, чтобы проверка по маске пропускалась.
+
+```
+Query:
+
+SELECT id
+FROM users
+WHERE (%(login)s IS NULL OR login ILIKE '%%' || %(login)s || '%%')
+  AND (%(first_name)s IS NULL OR first_name ILIKE '%%' || %(first_name)s || '%%')
+  AND (%(last_name)s IS NULL OR last_name ILIKE '%%' || %(last_name)s || '%%');
+
+
+Variables: {'login': 'user_', 'first_name': None, 'last_name': None}
+
+Explain:
+Seq Scan on users  (cost=0.00..1060.50 rows=40996 width=16)
+  Filter: ((login)::text ~~* '%user_%'::text)
+
+Analyze:
+Seq Scan on users  (cost=0.00..1060.50 rows=40996 width=16) (actual time=0.019..36.967 rows=41000.00 loops=1)
+  Filter: ((login)::text ~~* '%user_%'::text)
+  Buffers: shared hit=548
+Planning Time: 0.115 ms
+Execution Time: 38.219 ms
+```
+
+С индексом B-Tree:
+
+```
+Query:
+
+SELECT id
+FROM users
+WHERE (%(login)s IS NULL OR login ILIKE '%%' || %(login)s || '%%')
+  AND (%(first_name)s IS NULL OR first_name ILIKE '%%' || %(first_name)s || '%%')
+  AND (%(last_name)s IS NULL OR last_name ILIKE '%%' || %(last_name)s || '%%');
+
+
+Variables: {'login': 'user_', 'first_name': None, 'last_name': None}
+
+Explain:
+Seq Scan on users  (cost=0.00..921.15 rows=223 width=16)
+  Filter: ((login)::text ~~* '%user_%'::text)
+
+Analyze:
+Seq Scan on users  (cost=0.00..921.15 rows=223 width=16) (actual time=3.757..3.758 rows=0.00 loops=1)
+  Filter: ((login)::text ~~* '%user_%'::text)
+  Buffers: shared hit=534
+Planning Time: 0.031 ms
+Execution Time: 3.765 ms
+```
+
+Далее, видим, что нет индекса. Добавим индекс в БД. Так как ищем по тексту, то больше подойдет индекс GIN
+([обоснование](https://postgrespro.ru/docs/postgrespro/current/gin))
+
+```
+Query:
+
+SELECT id
+FROM users
+WHERE (%(login)s IS NULL OR login ILIKE '%%' || %(login)s || '%%')
+  AND (%(first_name)s IS NULL OR first_name ILIKE '%%' || %(first_name)s || '%%')
+  AND (%(last_name)s IS NULL OR last_name ILIKE '%%' || %(last_name)s || '%%');
+
+
+Variables: {'login': 'user_', 'first_name': None, 'last_name': None}
+
+Explain:
+Bitmap Heap Scan on users  (cost=324.47..740.59 rows=223 width=16)
+  Recheck Cond: ((login)::text ~~* '%user_%'::text)
+  ->  Bitmap Index Scan on users_login_search_index  (cost=0.00..324.41 rows=223 width=0)
+        Index Cond: ((login)::text ~~* '%user_%'::text)
+
+Analyze:
+Bitmap Heap Scan on users  (cost=324.47..740.59 rows=223 width=16) (actual time=7.423..49.310 rows=40000.00 loops=1)
+  Recheck Cond: ((login)::text ~~* '%user_%'::text)
+  Heap Blocks: exact=534
+  Buffers: shared hit=625
+  ->  Bitmap Index Scan on users_login_search_index  (cost=0.00..324.41 rows=223 width=0) (actual time=7.221..7.222 rows=40000.00 loops=1)
+        Index Cond: ((login)::text ~~* '%user_%'::text)
+        Index Searches: 1
+        Buffers: shared hit=91
+Planning:
+  Buffers: shared hit=1
+Planning Time: 0.082 ms
+Execution Time: 50.882 ms
+```
+
+Попробуем создать единый индекс для всех трех полей
+
+```
+CREATE INDEX idx_users_all_trgm 
+  ON "users" USING gin (
+      "login"        gin_trgm_ops,
+      "first_name"   gin_trgm_ops,
+      "last_name"    gin_trgm_ops
+  );
+```
+
+Результат:
+```
+Query:
+
+SELECT id
+FROM users
+WHERE (%(login)s IS NULL OR login ILIKE '%%' || %(login)s || '%%')
+  AND (%(first_name)s IS NULL OR first_name ILIKE '%%' || %(first_name)s || '%%')
+  AND (%(last_name)s IS NULL OR last_name ILIKE '%%' || %(last_name)s || '%%');
+
+
+Variables: {'login': 'user_', 'first_name': None, 'last_name': None}
+
+Explain:
+Seq Scan on users  (cost=0.00..921.15 rows=223 width=16)
+  Filter: ((login)::text ~~* '%user_%'::text)
+
+Analyze:
+Seq Scan on users  (cost=0.00..921.15 rows=223 width=16) (actual time=2.526..2.526 rows=0.00 loops=1)
+  Filter: ((login)::text ~~* '%user_%'::text)
+  Buffers: shared hit=534
+Planning:
+  Buffers: shared hit=1
+Planning Time: 0.042 ms
+Execution Time: 2.534 ms
+```
+
+Видим, что хуже, так как GIN плохо справляется с составным поиском. Выгоднее использовать BinaryOR
+как оптимизацию.
+
+Итоговая схема:
+
+```sql
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+CREATE TABLE "users" (
+  "id" UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  "login" VARCHAR UNIQUE NOT NULL,
+  "first_name" VARCHAR NOT NULL,
+  "last_name" VARCHAR NOT NULL
+);
+
+CREATE INDEX users_login_search_index ON users USING gin ("login" gin_trgm_ops);
+CREATE INDEX users_first_name_search_index ON users USING gin ("first_name" gin_trgm_ops);
+CREATE INDEX users_last_name_search_index ON users USING gin ("last_name" gin_trgm_ops);
+```
