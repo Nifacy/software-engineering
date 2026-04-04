@@ -85,7 +85,7 @@ Table viewings {
 CREATE TYPE property_status AS ENUM ('active', 'sold');
 
 CREATE TABLE "users" (
-  "id" VARCHAR PRIMARY KEY NOT NULL,
+  "id" UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
   "login" VARCHAR UNIQUE NOT NULL,
   "first_name" VARCHAR NOT NULL,
   "last_name" VARCHAR NOT NULL
@@ -94,11 +94,11 @@ CREATE TABLE "users" (
 CREATE TABLE "credentials" (
   "key" VARCHAR PRIMARY KEY NOT NULL,
   "verify_secret" VARCHAR NOT NULL,
-  "user_id" VARCHAR UNIQUE NOT NULL REFERENCES users(id)
+  "user_id" UUID UNIQUE NOT NULL REFERENCES users(id)
 );
 
 CREATE TABLE "addresses" (
-  "id" VARCHAR PRIMARY KEY NOT NULL,
+  "id" UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
   "country" VARCHAR NOT NULL,
   "city" VARCHAR NOT NULL,
   "street" VARCHAR NOT NULL,
@@ -107,17 +107,17 @@ CREATE TABLE "addresses" (
 );
 
 CREATE TABLE "properties" (
-  "id" VARCHAR PRIMARY KEY NOT NULL,
-  "owner_id" VARCHAR NOT NULL REFERENCES users(id),
-  "address_id" VARCHAR UNIQUE NOT NULL REFERENCES addresses(id),
+  "id" UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  "owner_id" UUID NOT NULL REFERENCES users(id),
+  "address_id" UUID UNIQUE NOT NULL REFERENCES addresses(id),
   "status" property_status NOT NULL,
   "price" INTEGER NOT NULL CHECK (price > 0)
 );
 
 CREATE TABLE "viewings" (
-  "id" VARCHAR PRIMARY KEY NOT NULL,
-  "user_id" VARCHAR NOT NULL REFERENCES users(id),
-  "property_id" VARCHAR NOT NULL REFERENCES properties(id),
+  "id" UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  "user_id" UUID NOT NULL REFERENCES users(id),
+  "property_id" UUID NOT NULL REFERENCES properties(id),
   viewing_date DATE NOT NULL,
 
   CONSTRAINT unique_date_per_property UNIQUE (property_id, viewing_date)
@@ -128,21 +128,21 @@ CREATE TABLE "viewings" (
 
 ```sql
 -- Test users
-INSERT INTO users (id, login, first_name, last_name) VALUES ('user1', 'user1', 'Alexey', 'Grishin');
+INSERT INTO users (id, login, first_name, last_name) VALUES (md5('user1')::uuid, md5('user1')::uuid, 'Alexey', 'Grishin');
 
 -- Test addresses
-INSERT INTO addresses (id, country, city, street, building) VALUES ('addr1', 'Russia', 'Moscow', 'Voykovskaya', 13);
+INSERT INTO addresses (id, country, city, street, building) VALUES (md5('addr1')::uuid, 'Russia', 'Moscow', 'Voykovskaya', 13);
 
 -- Test properties
-INSERT INTO properties (id, owner_id, address_id, status, price) VALUES ('prop1', 'user1', 'addr1', 'active', 200);
-INSERT INTO properties (id, owner_id, address_id, status, price) VALUES ('prop2', 'user-unknown', 'addr2', 'active', 200);
-INSERT INTO properties (id, owner_id, address_id, status, price) VALUES ('prop2', 'user1', 'addr2', 'unknown', 200);
-INSERT INTO properties (id, owner_id, address_id, status, price) VALUES ('prop2', 'user1', 'addr2', 'active', -200);
+INSERT INTO properties (id, owner_id, address_id, status, price) VALUES (md5('prop1')::uuid, md5('user1')::uuid, md5('addr1')::uuid, 'active', 200);
+INSERT INTO properties (id, owner_id, address_id, status, price) VALUES (md5('prop2')::uuid, md5('user-unknown')::uuid, md5('addr2')::uuid, 'active', 200);
+INSERT INTO properties (id, owner_id, address_id, status, price) VALUES (md5('prop2')::uuid, md5('user1')::uuid, md5('addr2')::uuid, 'unknown', 200);
+INSERT INTO properties (id, owner_id, address_id, status, price) VALUES (md5('prop2')::uuid, md5('user1')::uuid, md5('addr2')::uuid, 'active', -200);
 
 -- Test viewings
-INSERT INTO viewings (id, user_id, property_id, viewing_date) VALUES ('view1', 'user1', 'prop1', '2026-04-02');
-INSERT INTO viewings (id, user_id, property_id, viewing_date) VALUES ('view2', 'user-unknown', 'prop1', '2026-04-03');
-INSERT INTO viewings (id, user_id, property_id, viewing_date) VALUES ('view2', 'user1', 'prop-unknown', '2026-04-03');
-INSERT INTO viewings (id, user_id, property_id, viewing_date) VALUES ('view2', 'user1', 'prop1', 'foo');
-INSERT INTO viewings (id, user_id, property_id, viewing_date) VALUES ('view3', 'user1', 'prop1', '2026-04-02');
+INSERT INTO viewings (id, user_id, property_id, viewing_date) VALUES (md5('view1')::uuid, md5('user1')::uuid, md5('prop1')::uuid, '2026-04-02');
+INSERT INTO viewings (id, user_id, property_id, viewing_date) VALUES (md5('view2')::uuid, md5('user-unknown')::uuid, md5('prop1')::uuid, '2026-04-03');
+INSERT INTO viewings (id, user_id, property_id, viewing_date) VALUES (md5('view2')::uuid, md5('user1')::uuid, md5('prop-unknown')::uuid, '2026-04-03');
+INSERT INTO viewings (id, user_id, property_id, viewing_date) VALUES (md5('view2')::uuid, md5('user1')::uuid, md5('prop1')::uuid, 'foo');
+INSERT INTO viewings (id, user_id, property_id, viewing_date) VALUES (md5('view3')::uuid, md5('user1')::uuid, md5('prop1')::uuid, '2026-04-02');
 ```
