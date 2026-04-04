@@ -210,3 +210,77 @@ INSERT INTO viewings (id, user_id, property_id, viewing_date) VALUES
     (md5('viewing_09')::uuid, md5('user_09')::uuid, md5('property_08')::uuid, '2026-04-07'),
     (md5('viewing_10')::uuid, md5('user_10')::uuid, md5('property_09')::uuid, '2026-04-08');
 ```
+
+## Примеры запросов
+
+```sql
+-- User authorization
+SELECT user_id 
+FROM credentials 
+WHERE key = $1 AND verify_secret = $2 
+LIMIT 1;
+
+-- Find users by login / first name / last name
+SELECT *
+FROM users
+WHERE (login ILIKE '%' || $1 || '%')
+  AND (first_name ILIKE '%' || $2 || '%')
+  AND (last_name ILIKE '%' || $3 || '%')
+
+-- Get user info by ID
+SELECT id, login, first_name, last_name
+FROM users
+WHERE (id = $1)
+
+-- Find properties by city wildcard / min price / max price
+SELECT p.id
+FROM properties p
+JOIN addresses a ON p.address_id = a.id
+WHERE (a.city ILIKE '%' || $1 || '%')
+  AND (p.price >= $2::int)
+  AND (p.price <= $3::int);
+
+-- Find property by ID
+SELECT 
+  p.id AS property_id,
+  p.owner_id,
+  p.status,
+  p.price,
+  a.country as "address.country",
+  a.city as "address.city",
+  a.street as "address.street",
+  a.building as "address.building",
+  a.apartment as "address.apartment"
+FROM properties p
+JOIN addresses a ON p.address_id = a.id
+WHERE p.id = $1;
+
+-- Get property viewings
+SELECT id, user_id, viewing_date
+FROM viewings
+WHERE property_id = $1;
+
+-- Delete property viewing
+DELETE
+FROM viewings
+WHERE (property_id = $1) AND (id = $2);
+
+-- Get user viewings
+SELECT id, property_id, viewing_date
+FROM viewings
+WHERE user_id = $1;
+
+-- Get user properties
+SELECT
+    p.id,
+    p.status,
+    p.price,
+    a.country as "address.country",
+    a.city as "address.city",
+    a.street as "address.street",
+    a.building as "address.building",
+    a.apartment as "address.apartment"
+FROM properties as p
+JOIN ADDRESSES a ON a.id = p.address_id
+WHERE p.owner_id = $1;
+```
