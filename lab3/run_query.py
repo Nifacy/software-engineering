@@ -2,15 +2,16 @@ import psycopg2
 
 
 QUERY = '''
-SELECT id
-FROM users
-WHERE (%(login)s IS NULL OR login ILIKE '%%' || %(login)s || '%%')
-  AND (%(first_name)s IS NULL OR first_name ILIKE '%%' || %(first_name)s || '%%')
-  AND (%(last_name)s IS NULL OR last_name ILIKE '%%' || %(last_name)s || '%%');
+SELECT p.id
+FROM properties p
+JOIN addresses a ON p.address_id = a.id
+WHERE (%(city)s IS NULL OR a.city ILIKE '%%' || %(city)s || '%%')
+  AND (%(min_price)s IS NULL OR p.price >= %(min_price)s)
+  AND (%(max_price)s IS NULL OR p.price <= %(max_price)s);
 '''
 
 
-VARIABLES = {'login': 'user_', 'first_name': None, 'last_name': None}
+VARIABLES = {'city': 'dr', 'min_price': None, 'max_price': None}
 
 
 def _explain_query(conn, query: str) -> str:

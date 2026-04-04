@@ -4,7 +4,7 @@ import datetime
 import enum
 import random
 import string
-from typing import Final, Iterable, Iterator, Sequence
+from typing import Final, Iterator, Sequence
 import psycopg2
 import uuid
 import psycopg2.extras
@@ -17,14 +17,29 @@ COUNTRIES: Final = ('Russia', 'Germany', 'France', 'Armenia', 'Belarus', 'Kazahs
 CITIES: Final = (
     'druihginia',
     'klummont',
-    'flothull',
-    'stashire',
-    'chehville',
-    'klock',
-    'grul',
-    'obririe',
-    'inevine',
-    'encenard',
+    'klummont',
+    'klummont',
+    'klummont',
+    'klummont',
+    'klummont',
+    'klummont',
+    'klummont',
+    'klummont',
+    'klummont',
+    'klummont',
+    'klummont',
+    'klummont',
+    'klummont',
+    'klummont',
+    'klummont',
+    # 'flothull',
+    # 'stashire',
+    # 'chehville',
+    # 'klock',
+    # 'grul',
+    # 'obririe',
+    # 'inevine',
+    # 'encenard',
 )
 
 
@@ -207,13 +222,13 @@ with psycopg2.connect('dbname=postgres user=postgres password=postgres host=loca
                 ]
             )
 
-    with log_action('Write viewings'):
-        with conn.cursor() as cursor:
-            psycopg2.extras.execute_values(
-                cursor,
-                "INSERT INTO viewings (id, user_id, property_id, viewing_date) VALUES %s",
-                [
-                    (str(viewing.id), str(viewing.user_id), str(viewing.property_id), viewing.date.strftime('%Y-%m-%d'))
-                    for viewing in viewings
-                ]
-            )
+    # with log_action('Write viewings'):
+    #     with conn.cursor() as cursor:
+    #         psycopg2.extras.execute_values(
+    #             cursor,
+    #             "INSERT INTO viewings (id, user_id, property_id, viewing_date) VALUES %s",
+    #             [
+    #                 (str(viewing.id), str(viewing.user_id), str(viewing.property_id), viewing.date.strftime('%Y-%m-%d'))
+    #                 for viewing in viewings
+    #             ]
+    #         )

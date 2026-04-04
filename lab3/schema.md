@@ -362,39 +362,36 @@ Query:
 SELECT p.id
 FROM properties p
 JOIN addresses a ON p.address_id = a.id
-WHERE (a.city ILIKE '%gr%')
-  AND (p.price >= 0)
-  AND (p.price <= 2000);
+WHERE (a.city ILIKE '%%' || %(city)s || '%%')
+  AND (%(min_price)s IS NULL OR p.price >= %(min_price)s)
+  AND (%(max_price)s IS NULL OR p.price <= %(max_price)s);
 
+
+Variables: {'city': 'gr', 'min_price': None, 'max_price': None}
 
 Explain:
-Hash Join  (cost=962.50..2020.31 rows=736 width=16)
+Hash Join  (cost=711.75..1630.53 rows=8012 width=16)
   Hash Cond: (p.address_id = a.id)
-  ->  Seq Scan on properties p  (cost=0.00..1038.00 rows=7547 width=32)
-        Filter: ((price >= 0) AND (price <= 2000))
-  ->  Hash  (cost=912.50..912.50 rows=4000 width=16)
-        ->  Seq Scan on addresses a  (cost=0.00..912.50 rows=4000 width=16)
+  ->  Seq Scan on properties p  (cost=0.00..813.61 rows=40061 width=32)
+  ->  Hash  (cost=658.12..658.12 rows=4290 width=16)
+        ->  Seq Scan on addresses a  (cost=0.00..658.12 rows=4290 width=16)
               Filter: ((city)::text ~~* '%gr%'::text)
 
 Analyze:
-Hash Join  (cost=962.50..2020.31 rows=736 width=16) (actual time=27.983..32.594 rows=722.00 loops=1)
+Hash Join  (cost=711.75..1630.53 rows=8012 width=16) (actual time=25.851..33.232 rows=4002.00 loops=1)
   Hash Cond: (p.address_id = a.id)
-  Buffers: shared hit=823
-  ->  Seq Scan on properties p  (cost=0.00..1038.00 rows=7547 width=32) (actual time=0.013..3.744 rows=7596.00 loops=1)
-        Filter: ((price >= 0) AND (price <= 2000))
-        Rows Removed by Filter: 33404
-        Buffers: shared hit=423
-  ->  Hash  (cost=912.50..912.50 rows=4000 width=16) (actual time=27.944..27.945 rows=4041.00 loops=1)
-        Buckets: 4096  Batches: 1  Memory Usage: 222kB
-        Buffers: shared hit=400
-        ->  Seq Scan on addresses a  (cost=0.00..912.50 rows=4000 width=16) (actual time=0.014..26.775 rows=4041.00 loops=1)
+  Buffers: shared hit=803
+  ->  Seq Scan on properties p  (cost=0.00..813.61 rows=40061 width=32) (actual time=0.027..3.681 rows=40000.00 loops=1)
+        Buffers: shared hit=413
+  ->  Hash  (cost=658.12..658.12 rows=4290 width=16) (actual time=25.698..25.698 rows=4002.00 loops=1)
+        Buckets: 8192  Batches: 1  Memory Usage: 252kB
+        Buffers: shared hit=390
+        ->  Seq Scan on addresses a  (cost=0.00..658.12 rows=4290 width=16) (actual time=0.204..24.778 rows=4002.00 loops=1)
               Filter: ((city)::text ~~* '%gr%'::text)
-              Rows Removed by Filter: 36959
-              Buffers: shared hit=400
-Planning:
-  Buffers: shared hit=12
-Planning Time: 0.119 ms
-Execution Time: 32.643 ms
+              Rows Removed by Filter: 35998
+              Buffers: shared hit=390
+Planning Time: 0.073 ms
+Execution Time: 33.378 ms
 
 ---
 
@@ -683,3 +680,191 @@ CREATE INDEX users_login_search_index ON users USING gin ("login" gin_trgm_ops);
 CREATE INDEX users_first_name_search_index ON users USING gin ("first_name" gin_trgm_ops);
 CREATE INDEX users_last_name_search_index ON users USING gin ("last_name" gin_trgm_ops);
 ```
+
+### Поиск недвижимости
+
+Следующий кандидат на оптимизацию:
+```sql
+SELECT p.id
+FROM properties p
+JOIN addresses a ON p.address_id = a.id
+WHERE (a.city ILIKE '%%' || %(city)s || '%%')
+  AND (%(min_price)s IS NULL OR p.price >= %(min_price)s)
+  AND (%(max_price)s IS NULL OR p.price <= %(max_price)s);
+```
+
+Для начала рассмотрим вот такой запрос:
+```
+Query:
+
+SELECT p.id
+FROM properties p
+JOIN addresses a ON p.address_id = a.id
+WHERE (%(city)s IS NULL OR a.city ILIKE '%%' || %(city)s || '%%')
+  AND (%(min_price)s IS NULL OR p.price >= %(min_price)s)
+  AND (%(max_price)s IS NULL OR p.price <= %(max_price)s);
+
+
+Variables: {'city': None, 'min_price': 300, 'max_price': None}
+
+Explain:
+Hash Join  (cost=1296.00..2312.93 rows=39589 width=16)
+  Hash Cond: (p.address_id = a.id)
+  ->  Seq Scan on properties p  (cost=0.00..913.00 rows=39589 width=32)
+        Filter: (price >= 300)
+  ->  Hash  (cost=796.00..796.00 rows=40000 width=16)
+        ->  Seq Scan on addresses a  (cost=0.00..796.00 rows=40000 width=16)
+
+Analyze:
+Hash Join  (cost=1296.00..2312.93 rows=39589 width=16) (actual time=15.466..28.483 rows=39576.00 loops=1)
+  Hash Cond: (p.address_id = a.id)
+  Buffers: shared hit=809
+  ->  Seq Scan on properties p  (cost=0.00..913.00 rows=39589 width=32) (actual time=0.008..5.978 rows=39576.00 loops=1)
+        Filter: (price >= 300)
+        Rows Removed by Filter: 424
+        Buffers: shared hit=413
+  ->  Hash  (cost=796.00..796.00 rows=40000 width=16) (actual time=14.612..14.613 rows=40000.00 loops=1)
+        Buckets: 65536  Batches: 1  Memory Usage: 2387kB
+        Buffers: shared hit=396
+        ->  Seq Scan on addresses a  (cost=0.00..796.00 rows=40000 width=16) (actual time=0.005..6.332 rows=40000.00 loops=1)
+              Buffers: shared hit=396
+Planning:
+  Buffers: shared hit=12
+Planning Time: 0.172 ms
+Execution Time: 29.884 ms
+```
+
+Попробуем добавить B-Tree индекс для `price`:
+
+```sql
+CREATE INDEX property_price_search_index on properties(price);
+```
+
+Как видим, для этого запроса все лучше стало:
+```
+Query:
+
+SELECT p.id
+FROM properties p
+JOIN addresses a ON p.address_id = a.id
+WHERE (%(city)s IS NULL OR a.city ILIKE '%%' || %(city)s || '%%')
+  AND (%(min_price)s IS NULL OR p.price >= %(min_price)s)
+  AND (%(max_price)s IS NULL OR p.price <= %(max_price)s);
+
+
+Variables: {'city': None, 'min_price': 300, 'max_price': None}
+
+Explain:
+Hash Join  (cost=954.63..1625.62 rows=13354 width=16)
+  Hash Cond: (a.id = p.address_id)
+  ->  Seq Scan on addresses a  (cost=0.00..613.80 rows=21780 width=16)
+  ->  Hash  (cost=787.71..787.71 rows=13354 width=32)
+        ->  Bitmap Heap Scan on properties p  (cost=207.78..787.71 rows=13354 width=32)
+              Recheck Cond: (price >= 300)
+              ->  Bitmap Index Scan on property_price_search_index  (cost=0.00..204.44 rows=13354 width=0)
+                    Index Cond: (price >= 300)
+
+Analyze:
+Hash Join  (cost=954.63..1625.62 rows=13354 width=16) (actual time=18.114..30.278 rows=39543.00 loops=1)
+  Hash Cond: (a.id = p.address_id)
+  Buffers: shared hit=883
+  ->  Seq Scan on addresses a  (cost=0.00..613.80 rows=21780 width=16) (actual time=0.055..5.094 rows=40000.00 loops=1)
+        Buffers: shared hit=396
+  ->  Hash  (cost=787.71..787.71 rows=13354 width=32) (actual time=17.931..17.933 rows=39543.00 loops=1)
+        Buckets: 65536 (originally 16384)  Batches: 1 (originally 1)  Memory Usage: 2984kB
+        Buffers: shared hit=487
+        ->  Bitmap Heap Scan on properties p  (cost=207.78..787.71 rows=13354 width=32) (actual time=2.026..9.568 rows=39543.00 loops=1)
+              Recheck Cond: (price >= 300)
+              Heap Blocks: exact=413
+              Buffers: shared hit=487
+              ->  Bitmap Index Scan on property_price_search_index  (cost=0.00..204.44 rows=13354 width=0) (actual time=1.971..1.971 rows=39543.00 loops=1)
+                    Index Cond: (price >= 300)
+                    Index Searches: 1
+                    Buffers: shared hit=74
+Planning Time: 0.086 ms
+Execution Time: 31.719 ms
+```
+
+Query:
+
+SELECT p.id
+FROM properties p
+JOIN addresses a ON p.address_id = a.id
+WHERE (%(city)s IS NULL OR a.city ILIKE '%%' || %(city)s || '%%')
+  AND (%(min_price)s IS NULL OR p.price >= %(min_price)s)
+  AND (%(max_price)s IS NULL OR p.price <= %(max_price)s);
+
+
+Variables: {'city': 'dr', 'min_price': None, 'max_price': None}
+
+Explain:
+Hash Join  (cost=924.80..1842.81 rows=2464 width=16)
+  Hash Cond: (p.address_id = a.id)
+  ->  Seq Scan on properties p  (cost=0.00..813.00 rows=40000 width=32)
+  ->  Hash  (cost=894.00..894.00 rows=2464 width=16)
+        ->  Seq Scan on addresses a  (cost=0.00..894.00 rows=2464 width=16)
+              Filter: ((city)::text ~~* '%dr%'::text)
+
+Analyze:
+Hash Join  (cost=924.80..1842.81 rows=2464 width=16) (actual time=26.462..33.196 rows=2396.00 loops=1)
+  Hash Cond: (p.address_id = a.id)
+  Buffers: shared hit=807
+  ->  Seq Scan on properties p  (cost=0.00..813.00 rows=40000 width=32) (actual time=0.012..2.951 rows=40000.00 loops=1)
+        Buffers: shared hit=413
+  ->  Hash  (cost=894.00..894.00 rows=2464 width=16) (actual time=26.378..26.379 rows=2396.00 loops=1)
+        Buckets: 4096  Batches: 1  Memory Usage: 145kB
+        Buffers: shared hit=394
+        ->  Seq Scan on addresses a  (cost=0.00..894.00 rows=2464 width=16) (actual time=0.030..25.660 rows=2396.00 loops=1)
+              Filter: ((city)::text ~~* '%dr%'::text)
+              Rows Removed by Filter: 37604
+              Buffers: shared hit=394
+Planning:
+  Buffers: shared hit=12
+Planning Time: 0.164 ms
+Execution Time: 33.290 ms
+
+Query:
+
+SELECT p.id
+FROM properties p
+JOIN addresses a ON p.address_id = a.id
+WHERE (%(city)s IS NULL OR a.city ILIKE '%%' || %(city)s || '%%')
+  AND (%(min_price)s IS NULL OR p.price >= %(min_price)s)
+  AND (%(max_price)s IS NULL OR p.price <= %(max_price)s);
+
+
+Variables: {'city': 'dr', 'min_price': None, 'max_price': None}
+
+Explain:
+Hash Join  (cost=825.07..1743.09 rows=2476 width=16)
+  Hash Cond: (p.address_id = a.id)
+  ->  Seq Scan on properties p  (cost=0.00..813.00 rows=40000 width=32)
+  ->  Hash  (cost=794.12..794.12 rows=2476 width=16)
+        ->  Bitmap Heap Scan on addresses a  (cost=369.17..794.12 rows=2476 width=16)
+              Recheck Cond: ((city)::text ~~* '%dr%'::text)
+              ->  Bitmap Index Scan on address_city_search_index  (cost=0.00..368.56 rows=2476 width=0)
+                    Index Cond: ((city)::text ~~* '%dr%'::text)
+
+Analyze:
+Hash Join  (cost=825.07..1743.09 rows=2476 width=16) (actual time=30.801..36.940 rows=2469.00 loops=1)
+  Hash Cond: (p.address_id = a.id)
+  Buffers: shared hit=879
+  ->  Seq Scan on properties p  (cost=0.00..813.00 rows=40000 width=32) (actual time=0.010..2.545 rows=40000.00 loops=1)
+        Buffers: shared hit=413
+  ->  Hash  (cost=794.12..794.12 rows=2476 width=16) (actual time=30.747..30.747 rows=2469.00 loops=1)
+        Buckets: 4096  Batches: 1  Memory Usage: 148kB
+        Buffers: shared hit=466
+        ->  Bitmap Heap Scan on addresses a  (cost=369.17..794.12 rows=2476 width=16) (actual time=4.511..30.145 rows=2469.00 loops=1)
+              Recheck Cond: ((city)::text ~~* '%dr%'::text)
+              Rows Removed by Index Recheck: 37531
+              Heap Blocks: exact=394
+              Buffers: shared hit=466
+              ->  Bitmap Index Scan on address_city_search_index  (cost=0.00..368.56 rows=2476 width=0) (actual time=4.453..4.453 rows=40000.00 loops=1)
+                    Index Cond: ((city)::text ~~* '%dr%'::text)
+                    Index Searches: 1
+                    Buffers: shared hit=72
+Planning:
+  Buffers: shared hit=13
+Planning Time: 0.165 ms
+Execution Time: 37.165 ms
+
