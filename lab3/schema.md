@@ -82,6 +82,8 @@ Table viewings {
 ### PostgresQL (миграция)
 
 ```sql
+CREATE TYPE property_status AS ENUM ('active', 'sold');
+
 CREATE TABLE "users" (
   "id" VARCHAR PRIMARY KEY NOT NULL,
   "login" VARCHAR UNIQUE NOT NULL,
@@ -103,4 +105,44 @@ CREATE TABLE "addresses" (
   "building" INTEGER NOT NULL CHECK (building > 0),
   "apartment" INTEGER CHECK (apartment > 0)
 );
+
+CREATE TABLE "properties" (
+  "id" VARCHAR PRIMARY KEY NOT NULL,
+  "owner_id" VARCHAR NOT NULL REFERENCES users(id),
+  "address_id" VARCHAR UNIQUE NOT NULL REFERENCES addresses(id),
+  "status" property_status NOT NULL,
+  "price" INTEGER NOT NULL CHECK (price > 0)
+);
+
+CREATE TABLE "viewings" (
+  "id" VARCHAR PRIMARY KEY NOT NULL,
+  "user_id" VARCHAR NOT NULL REFERENCES users(id),
+  "property_id" VARCHAR NOT NULL REFERENCES properties(id),
+  viewing_date DATE NOT NULL,
+
+  CONSTRAINT unique_date_per_property UNIQUE (property_id, viewing_date)
+);
+```
+
+## Валидация данных
+
+```sql
+-- Test users
+INSERT INTO users (id, login, first_name, last_name) VALUES ('user1', 'user1', 'Alexey', 'Grishin');
+
+-- Test addresses
+INSERT INTO addresses (id, country, city, street, building) VALUES ('addr1', 'Russia', 'Moscow', 'Voykovskaya', 13);
+
+-- Test properties
+INSERT INTO properties (id, owner_id, address_id, status, price) VALUES ('prop1', 'user1', 'addr1', 'active', 200);
+INSERT INTO properties (id, owner_id, address_id, status, price) VALUES ('prop2', 'user-unknown', 'addr2', 'active', 200);
+INSERT INTO properties (id, owner_id, address_id, status, price) VALUES ('prop2', 'user1', 'addr2', 'unknown', 200);
+INSERT INTO properties (id, owner_id, address_id, status, price) VALUES ('prop2', 'user1', 'addr2', 'active', -200);
+
+-- Test viewings
+INSERT INTO viewings (id, user_id, property_id, viewing_date) VALUES ('view1', 'user1', 'prop1', '2026-04-02');
+INSERT INTO viewings (id, user_id, property_id, viewing_date) VALUES ('view2', 'user-unknown', 'prop1', '2026-04-03');
+INSERT INTO viewings (id, user_id, property_id, viewing_date) VALUES ('view2', 'user1', 'prop-unknown', '2026-04-03');
+INSERT INTO viewings (id, user_id, property_id, viewing_date) VALUES ('view2', 'user1', 'prop1', 'foo');
+INSERT INTO viewings (id, user_id, property_id, viewing_date) VALUES ('view3', 'user1', 'prop1', '2026-04-02');
 ```
