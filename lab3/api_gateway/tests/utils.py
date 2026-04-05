@@ -1,4 +1,4 @@
-from typing import Any, Literal
+from typing import Any, Literal, TypeAlias
 
 import pytest_userver.client
 import uuid
@@ -7,7 +7,7 @@ import string
 import datetime
 
 
-type PropertyStatus = Literal['active', 'sold']
+PropertyStatus: TypeAlias = Literal['active', 'sold']
 
 
 def _generate_uuid() -> str:

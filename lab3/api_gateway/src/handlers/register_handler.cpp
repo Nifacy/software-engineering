@@ -26,23 +26,19 @@ common::Response RegisterHandler::HandleRequestImpl(
     const auto request_body =
         ParseRequestBody<api_gateway::schemas::auth::RegisterRequestBody>(
             request);
-    const auto user_id = userver::utils::generators::GenerateUuid();
+
+    const components::user_storage::User user{
+        .login = request_body.login,
+        .first_name = request_body.firstName,
+        .last_name = request_body.lastName,
+    };
+    const auto user_id = user_storage_.CreateUser(user);
 
     const components::credentials_storage::Credentials credentials{
         .verify_secret = request_body.password,
         .payload = user_id,
     };
     credentials_storage_.AddCredentials(request_body.login, credentials);
-
-    const components::user_storage::User user{
-        .id = user_id,
-        .login = request_body.login,
-        .firstName = request_body.firstName,
-        .lastName = request_body.lastName,
-        .propertyIds = std::unordered_set<std::string>(),
-    };
-
-    user_storage_.CreateUser(user);
 
     const auto token_pair = jwt_auth_.GenerateToken(user_id);
     return common::Response(userver::http::StatusCode::Created,
@@ -51,7 +47,7 @@ common::Response RegisterHandler::HandleRequestImpl(
                                 .refreshToken = token_pair.refresh_token,
                             });
 
-  } catch (const components::credentials_storage::CredentialsAlreadyExists&) {
+  } catch (const components::user_storage::UserAlreadyExistsException&) {
     throw common::HttpError(userver::http::StatusCode::Conflict,
                             "User already exists");
   }

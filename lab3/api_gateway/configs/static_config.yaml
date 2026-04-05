@@ -45,6 +45,11 @@ components_manager:
             method: POST
             task_processor: main-task-processor
 
+        database:
+            dbconnection: 'postgresql://postgres:postgres@0.0.0.0:5432/postgres'
+            blocking_task_processor: fs-task-processor
+            dns_resolver: async
+
         # Project components
 
         fs-cache-main:

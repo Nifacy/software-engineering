@@ -1,7 +1,10 @@
 #include <auth/auth_checker_factory.hpp>
 #include <components/credentials_storage/credentials_storage.hpp>
 #include <components/jwt_auth/jwt_auth.hpp>
+#include <components/property_storage/property_storage.hpp>
+#include <components/user_storage/user_storage.hpp>
 #include <components/viewing_storage/viewing_storage.hpp>
+#include <handlers/create_property_handler.hpp>
 #include <handlers/delete_viewing_handler.hpp>
 #include <handlers/find_properties_handler.hpp>
 #include <handlers/find_users_handler.hpp>
@@ -27,11 +30,9 @@
 #include <userver/server/handlers/http_handler_static.hpp>
 #include <userver/server/handlers/ping.hpp>
 #include <userver/server/handlers/tests_control.hpp>
+#include <userver/storages/postgres/postgres.hpp>
 #include <userver/testsuite/testsuite_support.hpp>
 #include <userver/utils/daemon_run.hpp>
-#include <components/property_storage/property_storage.hpp>
-#include <components/user_storage/user_storage.hpp>
-#include <handlers/create_property_handler.hpp>
 
 int main(int argc, char* argv[]) {
   userver::server::handlers::auth::RegisterAuthCheckerFactory<
@@ -42,6 +43,7 @@ int main(int argc, char* argv[]) {
           .Append<userver::components::TestsuiteSupport>()
           .AppendComponentList(userver::clients::http::ComponentList())
           .Append<userver::components::FsCache>("fs-cache-main")
+          .Append<userver::components::Postgres>("database")
           .Append<userver::clients::dns::Component>()
           .Append<userver::server::handlers::TestsControl>()
           .Append<userver::congestion_control::Component>()

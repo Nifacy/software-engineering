@@ -3,22 +3,20 @@
 #include <optional>
 #include <stdexcept>
 #include <string>
-#include <unordered_set>
 #include <userver/components/component_base.hpp>
+#include <userver/storages/postgres/cluster.hpp>
 
 namespace components::user_storage {
 
 struct User {
-  std::string id;  // TODO: Remove ID from document
   std::string login;
-  std::string firstName;
-  std::string lastName;
-  std::unordered_set<std::string> propertyIds;
+  std::string first_name;
+  std::string last_name;
 };
 
 class UserAlreadyExistsException : public std::runtime_error {
  public:
-  explicit UserAlreadyExistsException(const std::string& user_id);
+  explicit UserAlreadyExistsException(const std::string& login);
 };
 
 class UserNotFound : public std::runtime_error {
@@ -33,9 +31,7 @@ class UserStorage final : public userver::components::ComponentBase {
   explicit UserStorage(const userver::components::ComponentConfig& config,
                        const userver::components::ComponentContext& context);
 
-  void CreateUser(const User& user);
-
-  void UpdateUser(const User& user);
+  std::string CreateUser(const User& user);
 
   std::vector<std::string> FindUsers(
       const std::optional<std::string>& login_pattern,
@@ -45,7 +41,7 @@ class UserStorage final : public userver::components::ComponentBase {
   User GetUser(const std::string& user_id) const;
 
  private:
-  std::unordered_map<std::string, User> users_;
+  userver::storages::postgres::ClusterPtr cluster_;
 };
 
 }  // namespace components::user_storage

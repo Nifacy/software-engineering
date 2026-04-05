@@ -56,10 +56,6 @@ handlers::common::Response CreatePropertyHandler::HandleRequestImpl(
 
   property_storage_.CreateProperty(property_id, new_property);
 
-  auto user = user_storage_.GetUser(user_id);
-  user.propertyIds.emplace(property_id);
-  user_storage_.UpdateUser(user);
-
   return handlers::common::Response(
       userver::server::http::HttpStatus::Created,
       api_gateway::schemas::property::Property{

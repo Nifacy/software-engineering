@@ -20,10 +20,10 @@ common::Response GetUserHandler::HandleRequestImpl(
     const auto user = user_storage_.GetUser(user_id);
     return common::Response(userver::http::StatusCode::OK,
                             api_gateway::schemas::user::UserInfo{
-                                .id = user.id,
+                                .id = user_id,
                                 .login = user.login,
-                                .firstName = user.firstName,
-                                .lastName = user.lastName,
+                                .firstName = user.first_name,
+                                .lastName = user.last_name,
                             });
   } catch (const components::user_storage::UserNotFound&) {
     throw common::HttpError(userver::http::StatusCode::NotFound,

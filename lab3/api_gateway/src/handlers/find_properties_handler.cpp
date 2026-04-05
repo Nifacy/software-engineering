@@ -21,18 +21,15 @@ std::optional<int> FindPropertiesHandler::TryGetIntArg(
     return std::nullopt;
   }
 
-  int result = 0;
   const std::string value = *maybe_value;
-  auto [ptr, ec] =
-      std::from_chars(value.data(), value.data() + value.size(), result);
 
-  if (ec == std::errc() && ptr == value.data() + value.size()) {
-    return result;
+  try {
+    return std::stoi(value);
+  } catch (const std::exception& e) {
+    throw common::HttpError(
+        userver::http::StatusCode::BadRequest,
+        "Query argument '" + arg_name + "' must be an integer");
   }
-
-  throw common::HttpError(
-      userver::http::StatusCode::BadRequest,
-      "Query argument '" + arg_name + "' must be an integer");
 }
 
 common::Response FindPropertiesHandler::HandleRequestImpl(

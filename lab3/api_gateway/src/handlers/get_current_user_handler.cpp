@@ -19,10 +19,10 @@ common::Response GetCurrentUserHandler::HandleRequestImpl(
 
   return common::Response(userver::http::StatusCode::OK,
                           api_gateway::schemas::user::UserInfo{
-                              .id = user.id,
+                              .id = user_id,
                               .login = user.login,
-                              .firstName = user.firstName,
-                              .lastName = user.lastName,
+                              .firstName = user.first_name,
+                              .lastName = user.last_name,
                           });
 }
 

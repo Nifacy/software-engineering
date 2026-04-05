@@ -8,7 +8,7 @@ include(DownloadUserver)
 
 find_package(
     userver
-    COMPONENTS core chaotic#
+    COMPONENTS core postgresql chaotic#
     QUIET
 )
 if(NOT userver_FOUND)
@@ -51,6 +51,7 @@ target_link_libraries(
     ${PROJECT_NAME}_objs
     PUBLIC userver::core #
     PUBLIC jwt-cpp::jwt-cpp #
+    PUBLIC userver::postgresql #
 )
 
 # Generate schema C++ types
@@ -76,6 +77,20 @@ file(GLOB OPEN_API_FILES "${CMAKE_CURRENT_SOURCE_DIR}/api/*")
 file(COPY ${OPEN_API_FILES} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/static/docs)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/static/swagger.html DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/static/docs/)
 file(RENAME ${CMAKE_CURRENT_BINARY_DIR}/static/docs/swagger.html ${CMAKE_CURRENT_BINARY_DIR}/static/docs/index.html)
+
+# Build SQL queries
+userver_add_sql_library(
+    ${PROJECT_NAME}-sql
+    NAMESPACE
+    queries
+    SOURCE_DIR
+    postgresql/queries
+    OUTPUT_DIR
+    ${CMAKE_CURRENT_BINARY_DIR}
+    SQL_FILES
+    *.sql
+)
+target_link_libraries(${PROJECT_NAME}_objs PRIVATE ${PROJECT_NAME}-sql)
 
 # The Service
 

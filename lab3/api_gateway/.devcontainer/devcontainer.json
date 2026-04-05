@@ -1,8 +1,9 @@
 {
     "name": "API Gateway Service",
-    "dockerFile": "Dockerfile",
+    "image": "ghcr.io/userver-framework/ubuntu-22.04-userver-pg-dev:v2.15",
+    // "dockerFile": "Dockerfile",
     "containerEnv": {
-        "CCACHE_DIR": "/home/ubuntu/api_gateway/.ccache",
+        "CCACHE_DIR": "/home/user/api_gateway/.ccache",
         "CORES_DIR": "/cores",
         "PREFIX": "${PREFIX:-~/.local}",
         "SHELL": "/bin/bash"
@@ -34,12 +35,12 @@
     },
     "forwardPorts": [ 8080 ],
     "mounts": [],
-    "onCreateCommand": "sudo git config --global --add safe.directory /home/ubuntu/api_gateway",
+    "onCreateCommand": "sudo git config --global --add safe.directory /home/user/api_gateway",
     "runArgs": [
         "--cap-add=SYS_PTRACE",
         "--security-opt",
         "seccomp=unconfined"
     ],
-    "workspaceFolder": "/home/ubuntu/api_gateway",
-    "workspaceMount": "source=${localWorkspaceFolder},target=/home/ubuntu/api_gateway,type=bind"
+    "workspaceFolder": "/home/user/api_gateway",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/home/user/api_gateway,type=bind"
 }
