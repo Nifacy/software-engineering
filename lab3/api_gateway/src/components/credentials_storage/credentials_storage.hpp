@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <string>
 #include <userver/components/component_base.hpp>
+#include <userver/storages/postgres/cluster.hpp>
 
 namespace components::credentials_storage {
 
@@ -40,7 +41,7 @@ class CredentialsStorage final : public userver::components::ComponentBase {
                                 const std::string& verify_secret) const;
 
  private:
-  std::unordered_map<std::string, Credentials> credentials_;
+  userver::storages::postgres::ClusterPtr cluster_;
 };
 
 }  // namespace components::credentials_storage

@@ -12,3 +12,9 @@ CREATE INDEX idx_users_all_trgm ON users USING gin (
     first_name gin_trgm_ops,
     last_name gin_trgm_ops
 );
+
+CREATE TABLE credentials (
+  key VARCHAR PRIMARY KEY NOT NULL,
+  verify_secret VARCHAR NOT NULL,
+  user_id UUID UNIQUE NOT NULL REFERENCES users(id)
+);
