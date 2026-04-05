@@ -1,0 +1,165 @@
+components_manager:
+    task_processors:
+
+        main-task-processor:
+            worker_threads: $worker-threads
+
+        fs-task-processor:
+            worker_threads: $worker-fs-threads
+
+    default_task_processor: main-task-processor
+
+    components:
+        server:
+            listener:
+                port: $server-port
+                task_processor: main-task-processor
+
+        logging:
+            fs-task-processor: fs-task-processor
+            loggers:
+                default:
+                    file_path: '@stderr'
+                    level: $logger-level
+                    overflow_behavior: discard
+
+        dynamic-config:
+            defaults:
+                HTTP_CLIENT_CONNECTION_POOL_SIZE: 1000
+
+        testsuite-support: {}
+
+        congestion-control:
+
+        http-client:
+        http-client-core:
+            load-enabled: $is_testing
+            fs-task-processor: fs-task-processor
+
+        dns-client:
+            fs-task-processor: fs-task-processor
+
+        tests-control:
+            load-enabled: $is-testing
+            path: /tests/{action}
+            method: POST
+            task_processor: main-task-processor
+
+        # Project components
+
+        fs-cache-main:
+            dir: static/docs
+
+        credentials-storage:
+            load-enabled: true
+
+        user-storage:
+            load-enabled: true
+
+        auth-checker:
+            load-enabled: true
+
+        property-storage:
+            load-enabled: true
+
+        viewing-storage:
+            load-enabled: true
+
+        jwt-auth:
+            load-enabled: true
+            access_secret: $access_secret
+            access_secret#env: ACCESS_SECRET
+            refresh_secret: $refresh_secret
+            refresh_secret#env: REFRESH_SECRET
+            access_lifetime: 3600  # 1 hour
+            refresh_lifetime: 604800  # 1 week
+            issuer: property-service
+
+        # HTTP endpoint handlers
+
+        register-handler:
+            path: /api/v1/auth/register
+            method: POST
+
+        login-handler:
+            path: /api/v1/auth/login
+            method: POST
+
+        refresh-token-handler:
+            path: /api/v1/auth/refresh
+            method: POST
+
+        find-users-handler:
+            path: /api/v1/users
+            method: GET
+
+        get-user-handler:
+            path: /api/v1/users/{id}
+            method: GET
+
+        get-current-user-handler:
+            path: /api/v1/users/me
+            method: GET
+            auth:
+                types:
+                - jwt-auth
+
+        create-property-handler:
+            path: /api/v1/properties
+            method: POST
+            auth:
+                types:
+                - jwt-auth
+
+        find-properties-handler:
+            path: /api/v1/properties
+            method: GET
+
+        get-property-handler:
+            path: /api/v1/properties/{id}
+            method: GET
+
+        schedule-viewing-handler:
+            path: /api/v1/properties/{id}/viewings
+            method: POST
+            auth:
+                types:
+                - jwt-auth
+
+        delete-viewing-handler:
+            path: /api/v1/properties/{property_id}/viewings/{viewing_id}
+            method: DELETE
+            auth:
+                types:
+                - jwt-auth
+
+        get-property-viewings-handler:
+            path: /api/v1/properties/{id}/viewings
+            method: GET
+
+        get-user-viewings-handler:
+            path: /api/v1/users/me/viewings
+            method: GET
+            auth:
+                types:
+                - jwt-auth
+
+        update-property-handler:
+            path: /api/v1/properties/{id}
+            method: PATCH
+            auth:
+                types:
+                - jwt-auth
+
+        get-user-properties-handler:
+            path: /api/v1/users/me/properties
+            method: GET
+            auth:
+                types:
+                - jwt-auth
+
+        docs-handler:
+            path: /api/v1/docs/*
+            method: GET
+            fs-cache-component: fs-cache-main
+            directory-file: index.html

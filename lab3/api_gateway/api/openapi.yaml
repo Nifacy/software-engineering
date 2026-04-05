@@ -1,0 +1,381 @@
+openapi: 3.0.3
+info:
+  title: Property Service - OpenAPI 3.0
+  description: |-
+    A service for managing real estate and making an appointment to view it
+  termsOfService: https://swagger.io/terms/
+  contact:
+    email: property-service@example.com
+  version: 1.0.0
+
+servers:
+- url: https://localhost:8080
+
+tags:
+- name: auth
+  description: Endpoints related to authorization
+
+- name: property
+  description: Endpoints related to property
+
+- name: user
+  description: Endpoints related to user
+
+- name: viewing
+  description: Endpoint related to viewing
+
+paths:
+  /api/v1/auth/register:
+    post:
+      tags: [ auth ]
+      summary: Register a new user
+      operationId: registerUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: ./definitions/auth.yaml#/components/schemas/RegisterRequestBody
+        required: true
+      responses:
+        '201':
+          description: User registered
+          content:
+            application/json:
+              schema:
+                $ref: ./definitions/auth.yaml#/components/schemas/TokenPair
+        '400':
+          description: Invalid payload
+        '409':
+          description: User with specified login lready exists
+
+  /api/v1/auth/login:
+    post:
+      tags: [ auth ]
+      summary: Login with specified credentials
+      operationId: loginUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: ./definitions/auth.yaml#/components/schemas/LoginRequestBody
+        required: true
+      responses:
+        '200':
+          description: Login success
+          content:
+            application/json:
+              schema:
+                $ref: ./definitions/auth.yaml#/components/schemas/TokenPair
+        '400':
+          description: Invalid payload
+        '401':
+          description: Bad credentials
+
+  /api/v1/users:
+    get:
+      tags: [ user ]
+      summary: Find users by specified filters
+      operationId: findUsers
+      parameters:
+      - name: login
+        in: query
+        description: Login mask
+        required: false
+        explode: true
+        schema:
+          type: string
+      - name: firstName
+        in: query
+        description: First name of user
+        required: false
+        explode: true
+        schema:
+          type: string
+      - name: lastName
+        in: query
+        description: Last name of user
+        required: false
+        explode: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Users found
+          content:
+            application/json:
+              schema:
+                $ref: ./definitions/user.yaml#/components/schemas/UserIds
+
+  /api/v1/users/{userId}:
+    get:
+      tags: [ user ]
+      summary: Get user info by specified ID
+      operationId: getUserInfo
+      parameters:
+      - name: userId
+        in: path
+        description: ID of user
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: User found
+          content:
+            appliction/json:
+              schema:
+                $ref: ./definitions/user.yaml#/components/schemas/UserInfo
+        '404':
+          description: User not found
+
+  /api/v1/users/me:
+    get:
+      tags: [ user ]
+      summary: Get information about current user
+      operationId: getCurrentUser
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: User found
+          content:
+            application/json:
+              schema:
+                $ref: ./definitions/user.yaml#/components/schemas/UserInfo
+  /api/v1/properties:
+    post:
+      tags: [ property ]
+      summary: Create new property
+      operationId: createProperty
+      security:
+      - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: ./definitions/property.yaml#/components/schemas/CreatePropertyRequestBody
+        required: true
+      responses:
+        '200':
+          description: Property created
+          content:
+            application/json:
+              schema:
+                $ref: ./definitions/property.yaml#/components/schemas/Property
+        '400':
+          description: Invalid payload
+    get:
+      tags: [ property ]
+      summary: Find properties by specified filters
+      operationId: findProperties
+      parameters:
+      - name: city
+        in: query
+        description: City of property
+        required: false
+        explode: true
+        schema:
+          type: string
+      - name: minPrice
+        in: query
+        description: Minimum price of property
+        required: false
+        explode: true
+        schema:
+          type: integer
+      - name: maxPrice
+        in: query
+        description: Maximum price of property
+        required: false
+        explode: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Properties found
+          content:
+            application/json:
+              schema:
+                $ref: ./definitions/property.yaml#/components/schemas/FindPropertiesResponse
+        '400':
+          description: Invalid filter values
+
+  /api/v1/properties/{propertyId}:
+    get:
+      tags: [ property ]
+      summary: Get information about property by specified ID
+      operationId: getPropertyById
+      parameters:
+      - name: propertyId
+        in: path
+        description: ID of property
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Property found
+          content:
+            application/json:
+              schema:
+                $ref: ./definitions/property.yaml#/components/schemas/Property
+        '404':
+          description: Property not found
+    patch:
+      tags: [ property ]
+      summary: Update information about property
+      operationId: upedateProperty
+      parameters:
+      - name: propertyId
+        in: path
+        description: ID of property
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: ./definitions/property.yaml#/components/schemas/UpdatePropertyRequestBody
+      responses:
+        '400':
+          description: Invalid payload
+        '403':
+          description: Permission denied
+        '404':
+          description: Property not found
+        '200':
+          description: Property updated
+          content:
+            application/json:
+              schema:
+                $ref: ./definitions/property.yaml#/components/schemas/Property
+
+  /api/v1/properties/{propertyId}/viewings:
+    post:
+      tags: [ viewing ]
+      summary: Schedule property viewing
+      operationId: scheduleViewing
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: propertyId
+        in: path
+        description: ID of property
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: ./definitions/property.yaml#/components/schemas/ScheduleViewingRequestBody
+        required: true
+      responses:
+        '200':
+          description: Viewing scheduled
+          content:
+            application/json:
+              schema:
+                $ref: ./definitions/viewing.yaml#/components/schemas/Viewing
+        '400':
+          description: Invlid payload
+    get:
+      tags: [ property, viewing ]
+      summary: Get viewings for specified property
+      parameters:
+      - name: propertyId
+        in: path
+        description: ID of property
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Viewings found
+          content:
+            application/json:
+              schema:
+                $ref: ./definitions/property.yaml#/components/schemas/PropertyViewingList
+        '404':
+          description: Property not found
+
+  /api/v1/properties/{propertyId}/viewings/{viewingId}:
+    delete:
+      tags: [ viewing ]
+      summary: Delete scheduled viewing
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: propertyId
+        in: path
+        description: ID of property
+        required: true
+        schema:
+          type: string
+      - name: viewingId
+        in: path
+        description: ID of viewing
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Viewing deleted
+        '403':
+          description: Permission denied
+        '404':
+          description: Viewing or property not found
+
+  /api/v1/users/me/viewings:
+    get:
+      tags: [ viewing ]
+      summary: Get current user viewings
+      operationId: getUserViewings
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Viewings found
+          content:
+            application/json:
+              schema:
+                $ref: ./definitions/user.yaml#/components/schemas/UserViewingList
+
+  /api/v1/users/me/properties:
+    get:
+      tags: [ property ]
+      summary: Get current user properties
+      operationId: getUserProperties
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Properties found
+          content:
+            application/json:
+              schema:
+                $ref: ./definitions/user.yaml#/components/schemas/UserPropertyList
+
+  /api/v1/auth/refresh:
+    post:
+      tags: [ auth ]
+      summary: Refresh token
+      operationId: refreshToken
+      security:
+      - bearerAuth: []
+      responses:
+        '400':
+          description: Invalid payload
+        '200':
+          description: Tokens refreshed
+          content:
+            application/json:
+              schema:
+                $ref: ./definitions/auth.yaml#/components/schemas/TokenPair
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: ./definitions/auth.yaml#/components/schemas/RefreshTokenRequestBody
+        required: true

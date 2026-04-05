@@ -1,0 +1,103 @@
+components:
+  schemas:
+    PropertyStatus:
+      type: string
+      enum: [ "active", "sold" ]
+
+    CreatePropertyRequestBody:
+      type: object
+      additionalProperties: false
+      properties:
+        address:
+          $ref: "./common.yaml#/components/schemas/Address"
+        price:
+          type: integer
+          minimum: 1
+      required:
+      - address
+      - price
+
+    Property:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          minLength: 1
+        address:
+          $ref: "./common.yaml#/components/schemas/Address"
+        ownerId:
+          type: string
+          minLength: 1
+        status:
+          $ref: "#/components/schemas/PropertyStatus"
+        price:
+          type: integer
+          minimum: 1
+      required:
+      - id
+      - address
+      - ownerId
+      - status
+      - price
+
+    PropertyViewing:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          minLength: 1
+        user_id:
+          type: string
+          minLength: 1
+        date:
+          type: string
+          format: date
+      required:
+      - id
+      - user_id
+      - date
+
+    ScheduleViewingRequestBody:
+      type: object
+      additionalProperties: false
+      properties:
+        date:
+          type: string
+          format: date
+      required:
+      - date
+
+    FindPropertiesResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        propertyIds:
+          type: array
+          items:
+            type: string
+            minLength: 1
+      required:
+      - propertyIds
+
+    PropertyViewingList:
+      type: object
+      additionalProperties: false
+      properties:
+        viewings:
+          type: array
+          items:
+            $ref: "#/components/schemas/PropertyViewing"
+      required:
+      - viewings
+
+    UpdatePropertyRequestBody:
+      type: object
+      additionalProperties: false
+      properties:
+        status:
+          $ref: "#/components/schemas/PropertyStatus"
+        price:
+          type: integer
+          minimum: 1
