@@ -1,7 +1,7 @@
 #include <auth/auth_checker_factory.hpp>
-#include <components/credentials_storage.hpp>
-#include <components/jwt_auth.hpp>
-#include <components/viewing_storage.hpp>
+#include <components/credentials_storage/credentials_storage.hpp>
+#include <components/jwt_auth/jwt_auth.hpp>
+#include <components/viewing_storage/viewing_storage.hpp>
 #include <handlers/delete_viewing_handler.hpp>
 #include <handlers/find_properties_handler.hpp>
 #include <handlers/find_users_handler.hpp>
@@ -29,9 +29,9 @@
 #include <userver/server/handlers/tests_control.hpp>
 #include <userver/testsuite/testsuite_support.hpp>
 #include <userver/utils/daemon_run.hpp>
-#include "components/property_storage.hpp"
-#include "components/user_storage.hpp"
-#include "handlers/create_property_handler.hpp"
+#include <components/property_storage/property_storage.hpp>
+#include <components/user_storage/user_storage.hpp>
+#include <handlers/create_property_handler.hpp>
 
 int main(int argc, char* argv[]) {
   userver::server::handlers::auth::RegisterAuthCheckerFactory<

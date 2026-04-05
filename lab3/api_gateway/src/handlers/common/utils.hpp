@@ -1,6 +1,6 @@
 #pragma once
 
-#include <components/property_storage.hpp>
+#include <components/property_storage/property_storage.hpp>
 #include <schemas/common_fwd.hpp>
 #include <schemas/property_fwd.hpp>
 

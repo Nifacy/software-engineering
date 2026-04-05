@@ -1,4 +1,4 @@
-#include <components/property_storage.hpp>
+#include <components/property_storage/property_storage.hpp>
 
 namespace components::property_storage {
 

@@ -1,5 +1,5 @@
-#include <components/credentials_storage.hpp>
-#include <components/jwt_auth.hpp>
+#include <components/credentials_storage/credentials_storage.hpp>
+#include <components/jwt_auth/jwt_auth.hpp>
 #include <userver/server/handlers/auth/auth_checker_base.hpp>
 
 namespace auth {

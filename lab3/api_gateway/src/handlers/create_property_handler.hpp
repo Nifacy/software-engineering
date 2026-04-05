@@ -1,7 +1,7 @@
 #pragma once
 
-#include <components/property_storage.hpp>
-#include <components/user_storage.hpp>
+#include <components/property_storage/property_storage.hpp>
+#include <components/user_storage/user_storage.hpp>
 #include <handlers/common/schema_http_handler.hpp>
 #include <userver/server/handlers/http_handler_base.hpp>
 

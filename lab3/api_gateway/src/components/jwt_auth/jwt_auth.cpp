@@ -1,6 +1,6 @@
 #include <jwt-cpp/jwt.h>
 
-#include <components/jwt_auth.hpp>
+#include <components/jwt_auth/jwt_auth.hpp>
 #include <userver/components/component_config.hpp>
 #include <userver/yaml_config/merge_schemas.hpp>
 

@@ -1,8 +1,8 @@
 #pragma once
 
-#include <components/credentials_storage.hpp>
-#include <components/jwt_auth.hpp>
-#include <components/user_storage.hpp>
+#include <components/credentials_storage/credentials_storage.hpp>
+#include <components/jwt_auth/jwt_auth.hpp>
+#include <components/user_storage/user_storage.hpp>
 #include <handlers/common/schema_http_handler.hpp>
 #include <userver/server/handlers/http_handler_base.hpp>
 

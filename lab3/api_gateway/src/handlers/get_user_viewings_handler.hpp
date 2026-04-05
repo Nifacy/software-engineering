@@ -1,6 +1,6 @@
 #pragma once
 
-#include <components/viewing_storage.hpp>
+#include <components/viewing_storage/viewing_storage.hpp>
 #include <handlers/common/schema_http_handler.hpp>
 #include <userver/server/handlers/http_handler_base.hpp>
 

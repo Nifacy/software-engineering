@@ -1,4 +1,4 @@
-#include <components/viewing_storage.hpp>
+#include <components/viewing_storage/viewing_storage.hpp>
 
 namespace components::viewing_storage {
 

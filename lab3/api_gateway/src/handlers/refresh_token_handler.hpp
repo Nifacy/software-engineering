@@ -1,6 +1,6 @@
 #pragma once
 
-#include <components/jwt_auth.hpp>
+#include <components/jwt_auth/jwt_auth.hpp>
 #include <handlers/common/schema_http_handler.hpp>
 #include <userver/server/handlers/http_handler_base.hpp>
 

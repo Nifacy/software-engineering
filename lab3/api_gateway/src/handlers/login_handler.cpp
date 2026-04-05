@@ -1,4 +1,4 @@
-#include <components/credentials_storage.hpp>
+#include <components/credentials_storage/credentials_storage.hpp>
 #include <handlers/login_handler.hpp>
 #include <schemas/auth.hpp>
 #include <userver/components/component_context.hpp>

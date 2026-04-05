@@ -2,7 +2,7 @@
 
 #include <handlers/common/schema_http_handler.hpp>
 #include <userver/server/handlers/http_handler_base.hpp>
-#include "components/property_storage.hpp"
+#include <components/property_storage/property_storage.hpp>
 
 namespace handlers::find_properties_handler {
 
