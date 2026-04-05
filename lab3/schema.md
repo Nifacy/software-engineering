@@ -525,6 +525,8 @@ Execution Time: 2.637 ms
 
 ## Оптимизации
 
+### Поиск пользователей
+
 Возьмем запрос
 
 ```
@@ -868,3 +870,163 @@ Planning:
 Planning Time: 0.165 ms
 Execution Time: 37.165 ms
 
+### Получение просмотров пользователя
+
+```
+Query:
+
+SELECT id, property_id, viewing_date
+FROM viewings
+WHERE user_id = %(user_id)s;
+
+
+Variables: {'user_id': '8402d32c-94b6-4fe8-ad5f-75b15441661b'}
+
+Explain:
+Seq Scan on viewings  (cost=0.00..913.00 rows=2 width=36)
+  Filter: (user_id = '8402d32c-94b6-4fe8-ad5f-75b15441661b'::uuid)
+
+Analyze:
+Seq Scan on viewings  (cost=0.00..913.00 rows=2 width=36) (actual time=1.218..2.964 rows=2.00 loops=1)
+  Filter: (user_id = '8402d32c-94b6-4fe8-ad5f-75b15441661b'::uuid)
+  Rows Removed by Filter: 39998
+  Buffers: shared hit=413
+Planning Time: 0.062 ms
+Execution Time: 2.980 ms
+```
+
+Как видим, тут запрос очень долго выполняется. Поможет индекс. Но учитываем что используется только операция `=`. Попробуем
+добавить BTree индекс.
+
+```sql
+CREATE INDEX viewing_user_id_search_index on viewings(user_id);
+```
+
+```
+Query:
+
+SELECT id, property_id, viewing_date
+FROM viewings
+WHERE user_id = %(user_id)s;
+
+
+Variables: {'user_id': '8402d32c-94b6-4fe8-ad5f-75b15441661b'}
+
+Explain:
+Bitmap Heap Scan on viewings  (cost=4.31..11.91 rows=2 width=36)
+  Recheck Cond: (user_id = '8402d32c-94b6-4fe8-ad5f-75b15441661b'::uuid)
+  ->  Bitmap Index Scan on viewing_user_id_search_index  (cost=0.00..4.30 rows=2 width=0)
+        Index Cond: (user_id = '8402d32c-94b6-4fe8-ad5f-75b15441661b'::uuid)
+
+Analyze:
+Bitmap Heap Scan on viewings  (cost=4.31..11.91 rows=2 width=36) (actual time=0.065..0.072 rows=2.00 loops=1)
+  Recheck Cond: (user_id = '8402d32c-94b6-4fe8-ad5f-75b15441661b'::uuid)
+  Heap Blocks: exact=2
+  Buffers: shared hit=2 read=2
+  ->  Bitmap Index Scan on viewing_user_id_search_index  (cost=0.00..4.30 rows=2 width=0) (actual time=0.040..0.040 rows=2.00 loops=1)
+        Index Cond: (user_id = '8402d32c-94b6-4fe8-ad5f-75b15441661b'::uuid)
+        Index Searches: 1
+        Buffers: shared read=2
+Planning Time: 0.042 ms
+Execution Time: 0.086 ms
+```
+
+Все работает нормально.
+
+### Получение недвижимости пользователя
+
+```
+Query:
+
+SELECT
+    p.id,
+    p.status,
+    p.price,
+    a.country as "address.country",
+    a.city as "address.city",
+    a.street as "address.street",
+    a.building as "address.building",
+    a.apartment as "address.apartment"
+FROM properties as p
+JOIN ADDRESSES a ON a.id = p.address_id
+WHERE p.owner_id = %(user_id)s;
+
+
+Variables: {'user_id': '8402d32c-94b6-4fe8-ad5f-75b15441661b'}
+
+Explain:
+Nested Loop  (cost=0.29..921.31 rows=1 width=57)
+  ->  Seq Scan on properties p  (cost=0.00..913.00 rows=1 width=40)
+        Filter: (owner_id = '8402d32c-94b6-4fe8-ad5f-75b15441661b'::uuid)
+  ->  Index Scan using addresses_pkey on addresses a  (cost=0.29..8.31 rows=1 width=49)
+        Index Cond: (id = p.address_id)
+
+Analyze:
+Nested Loop  (cost=0.29..921.31 rows=1 width=57) (actual time=0.053..3.791 rows=1.00 loops=1)
+  Buffers: shared hit=416
+  ->  Seq Scan on properties p  (cost=0.00..913.00 rows=1 width=40) (actual time=0.019..3.755 rows=1.00 loops=1)
+        Filter: (owner_id = '8402d32c-94b6-4fe8-ad5f-75b15441661b'::uuid)
+        Rows Removed by Filter: 39999
+        Buffers: shared hit=413
+  ->  Index Scan using addresses_pkey on addresses a  (cost=0.29..8.31 rows=1 width=49) (actual time=0.029..0.029 rows=1.00 loops=1)
+        Index Cond: (id = p.address_id)
+        Index Searches: 1
+        Buffers: shared hit=3
+Planning:
+  Buffers: shared hit=12
+Planning Time: 0.120 ms
+Execution Time: 3.809 ms
+```
+
+Тут можем аналогично с получением просмотров пользователя. Добавляем индекс
+
+```sql
+CREATE INDEX property_owner_id_search_index on properties(owner_id);
+```
+
+Теперь все работает
+
+```
+Query:
+
+SELECT
+    p.id,
+    p.status,
+    p.price,
+    a.country as "address.country",
+    a.city as "address.city",
+    a.street as "address.street",
+    a.building as "address.building",
+    a.apartment as "address.apartment"
+FROM properties as p
+JOIN ADDRESSES a ON a.id = p.address_id
+WHERE p.owner_id = %(user_id)s;
+
+
+Variables: {'user_id': '8402d32c-94b6-4fe8-ad5f-75b15441661b'}
+
+Explain:
+Nested Loop  (cost=0.58..16.62 rows=1 width=57)
+  ->  Index Scan using property_owner_id_search_index on properties p  (cost=0.29..8.31 rows=1 width=40)
+        Index Cond: (owner_id = '8402d32c-94b6-4fe8-ad5f-75b15441661b'::uuid)
+  ->  Index Scan using addresses_pkey on addresses a  (cost=0.29..8.31 rows=1 width=49)
+        Index Cond: (id = p.address_id)
+
+Analyze:
+Nested Loop  (cost=0.58..16.62 rows=1 width=57) (actual time=0.117..0.119 rows=1.00 loops=1)
+  Buffers: shared hit=4 read=2
+  ->  Index Scan using property_owner_id_search_index on properties p  (cost=0.29..8.31 rows=1 width=40) (actual time=0.070..0.071 rows=1.00 loops=1)
+        Index Cond: (owner_id = '8402d32c-94b6-4fe8-ad5f-75b15441661b'::uuid)
+        Index Searches: 1
+        Buffers: shared hit=1 read=2
+  ->  Index Scan using addresses_pkey on addresses a  (cost=0.29..8.31 rows=1 width=49) (actual time=0.042..0.042 rows=1.00 loops=1)
+        Index Cond: (id = p.address_id)
+        Index Searches: 1
+        Buffers: shared hit=3
+Planning:
+  Buffers: shared hit=12
+Planning Time: 0.245 ms
+Execution Time: 0.147 ms
+```
+
+### NEXT
