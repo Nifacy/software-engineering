@@ -38,3 +38,12 @@ CREATE TABLE properties (
 
 CREATE INDEX property_price_search_index on properties(price);
 CREATE INDEX address_city_search_index ON addresses USING gin (city gin_trgm_ops);
+
+CREATE TABLE viewings (
+  id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id),
+  property_id UUID NOT NULL REFERENCES properties(id),
+  viewing_date DATE NOT NULL,
+
+  CONSTRAINT unique_date_per_property UNIQUE (property_id, viewing_date)
+);

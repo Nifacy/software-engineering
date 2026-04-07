@@ -6,7 +6,6 @@
 #include <userver/utils/datetime/date.hpp>
 #include <userver/utils/uuid4.hpp>
 
-
 namespace handlers::get_property_viewings_handler {
 
 GetPropertyViewingsHandler::GetPropertyViewingsHandler(
@@ -20,13 +19,13 @@ GetPropertyViewingsHandler::GetPropertyViewingsHandler(
               .FindComponent<components::property_storage::PropertyStorage>()) {
 }
 
-api_gateway::schemas::property::PropertyViewing SerializeViewing(
-    const std::string& viewing_id,
+api_gateway::schemas::property::PropertyViewing serializeViewing(
+    const boost::uuids::uuid& viewing_id,
     const components::viewing_storage::Viewing& viewing) {
   return {
-      .id = viewing_id,
-      .user_id = viewing.user_id,
-      .date = userver::utils::datetime::DateFromRFC3339String(viewing.date),
+      .id = userver::utils::ToString(viewing_id),
+      .user_id = userver::utils::ToString(viewing.user_id),
+      .date = viewing.viewing_date,
   };
 }
 
@@ -50,10 +49,10 @@ common::Response GetPropertyViewingsHandler::HandleRequestImpl(
                             "Property not found");
   }
 
-  for (const auto& viewing_id : viewing_storage_.FindViewings(
-           std::nullopt, userver::utils::ToString(property_id))) {
+  for (const auto& viewing_id :
+       viewing_storage_.FindViewings(std::nullopt, property_id)) {
     const auto viewing = viewing_storage_.GetViewing(viewing_id);
-    response_dom.viewings.push_back(SerializeViewing(viewing_id, viewing));
+    response_dom.viewings.push_back(serializeViewing(viewing_id, viewing));
   }
 
   return common::Response(userver::http::StatusCode::OK, response_dom);

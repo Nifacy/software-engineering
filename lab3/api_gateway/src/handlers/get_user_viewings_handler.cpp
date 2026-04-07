@@ -6,13 +6,13 @@
 
 namespace handlers::get_user_viewings_handler {
 
-api_gateway::schemas::user::UserViewing SerializeViewing(
-    const std::string& viewing_id,
+api_gateway::schemas::user::UserViewing serializeViewing(
+    const boost::uuids::uuid& viewing_id,
     const components::viewing_storage::Viewing& viewing) {
   return {
-      .propertyId = viewing.property_id,
-      .id = viewing_id,
-      .date = userver::utils::datetime::DateFromRFC3339String(viewing.date),
+      .propertyId = userver::utils::ToString(viewing.property_id),
+      .id = userver::utils::ToString(viewing_id),
+      .date = viewing.viewing_date,
   };
 }
 
@@ -30,10 +30,11 @@ common::Response GetUserViewingsHandler::HandleRequestImpl(
   const auto user_id = request_context.GetData<boost::uuids::uuid>("user_id");
   api_gateway::schemas::user::UserViewingList response_dom;
 
-  for (const auto& viewing_id : viewing_storage_.FindViewings(
-           userver::utils::ToString(user_id), std::nullopt)) {
+  for (const auto& viewing_id :
+       viewing_storage_.FindViewings(user_id, std::nullopt)) {
     const auto viewing = viewing_storage_.GetViewing(viewing_id);
-    response_dom.viewings.push_back(SerializeViewing(viewing_id, viewing));
+    // TODO: move in common module
+    response_dom.viewings.push_back(serializeViewing(viewing_id, viewing));
   }
 
   return common::Response(userver::http::StatusCode::OK, response_dom);

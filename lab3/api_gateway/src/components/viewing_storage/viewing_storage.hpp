@@ -1,29 +1,28 @@
 #pragma once
 
+#include <boost/uuid/uuid.hpp>
 #include <optional>
 #include <stdexcept>
-#include <string>
 #include <userver/components/component_base.hpp>
+#include <userver/storages/postgres/cluster.hpp>
+#include <userver/utils/datetime/date.hpp>
 
 namespace components::viewing_storage {
 
-/// String in YYYY-MM-DD format
-using Date = std::string;
-
 struct Viewing {
-  std::string user_id;
-  std::string property_id;
-  Date date;
-};
-
-class ViewingAlreadyExists : public std::runtime_error {
- public:
-  explicit ViewingAlreadyExists(const std::string& viewing_id);
+  boost::uuids::uuid user_id;
+  boost::uuids::uuid property_id;
+  userver::utils::datetime::Date viewing_date;
 };
 
 class ViewingNotFound : public std::runtime_error {
  public:
-  explicit ViewingNotFound(const std::string& viewing_id);
+  explicit ViewingNotFound(const boost::uuids::uuid& viewing_id);
+};
+
+class ViewingDateTaken : public std::runtime_error {
+ public:
+  explicit ViewingDateTaken();
 };
 
 class ViewingStorage final : public userver::components::ComponentBase {
@@ -33,25 +32,25 @@ class ViewingStorage final : public userver::components::ComponentBase {
   explicit ViewingStorage(const userver::components::ComponentConfig& config,
                           const userver::components::ComponentContext& context);
 
-  void CreateViewing(const std::string& viewing_id, const Viewing& viewing);
-  void DeleteViewing(const std::string& viewing_id);
+  boost::uuids::uuid CreateViewing(const Viewing& viewing);
+  void DeleteViewing(const boost::uuids::uuid& viewing_id);
 
-  Viewing GetViewing(const std::string& viewing_id) const;
+  Viewing GetViewing(const boost::uuids::uuid& viewing_id) const;
 
-  std::vector<std::string> FindViewings(
-      const std::optional<std::string>& user_id,
-      const std::string& property_id) const;
+  std::vector<boost::uuids::uuid> FindViewings(
+      const std::optional<boost::uuids::uuid>& user_id,
+      const boost::uuids::uuid& property_id) const;
 
-  std::vector<std::string> FindViewings(
-      const std::string& user_id,
-      const std::optional<std::string>& property_id) const;
+  std::vector<boost::uuids::uuid> FindViewings(
+      const boost::uuids::uuid& user_id,
+      const std::optional<boost::uuids::uuid>& property_id) const;
 
  private:
-  std::vector<std::string> FindViewingsInternal(
-      const std::optional<std::string>& user_id,
-      const std::optional<std::string>& property_id) const;
+  std::vector<boost::uuids::uuid> FindViewingsInternal(
+      const std::optional<boost::uuids::uuid>& user_id,
+      const std::optional<boost::uuids::uuid>& property_id) const;
 
-  std::unordered_map<std::string, Viewing> storage_;
+  userver::storages::postgres::ClusterPtr cluster_;
 };
 
 }  // namespace components::viewing_storage

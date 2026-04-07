@@ -19,6 +19,23 @@ ScheduleViewingHandler::ScheduleViewingHandler(
               .FindComponent<components::property_storage::PropertyStorage>()) {
 }
 
+bool isTakenByCurrentUser(components::viewing_storage::ViewingStorage& storage,
+                          const boost::uuids::uuid& user_id,
+                          const boost::uuids::uuid& property_id,
+                          const userver::utils::datetime::Date& viewing_date) {
+  const auto viewings_ids =
+      storage.FindViewings(user_id, std::optional(property_id));
+
+  for (const auto& viewing_id : viewings_ids) {
+    const auto viewing = storage.GetViewing(viewing_id);
+    if (viewing.viewing_date == viewing_date) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 common::Response ScheduleViewingHandler::HandleRequestImpl(
     const userver::server::http::HttpRequest& request,
     userver::server::request::RequestContext& request_context) const {
@@ -45,39 +62,29 @@ common::Response ScheduleViewingHandler::HandleRequestImpl(
           "Viewing can be scheduled only for active properties");
     }
 
-    const auto viewing_id = userver::utils::generators::GenerateUuid();
-    const auto viewing_date =
-        userver::utils::datetime::ToString(request_body.date);
-
-    for (const auto& viewing_id : viewing_storage_.FindViewings(
-             std::nullopt, userver::utils::ToString(property_id))) {
-      const auto viewing = viewing_storage_.GetViewing(viewing_id);
-      if (viewing.date == viewing_date) {
-        if (viewing.user_id == userver::utils::ToString(user_id)) {
-          return common::Response(userver::http::StatusCode::kNotModified);
-        } else {
-          throw common::HttpError(userver::http::StatusCode::BadRequest,
-                                  "Viewing already scheduled for this date");
-        }
-      }
-    }
-
     const components::viewing_storage::Viewing new_viewing{
-        .user_id = userver::utils::ToString(user_id),
-        .property_id = userver::utils::ToString(property_id),
-        .date = userver::utils::datetime::ToString(request_body.date),
+        .user_id = user_id,
+        .property_id = property_id,
+        .viewing_date = request_body.date,
     };
 
-    viewing_storage_.CreateViewing(viewing_id, new_viewing);
+    const auto viewing_id = viewing_storage_.CreateViewing(new_viewing);
 
     return common::Response(
         userver::http::StatusCode::Created,
         api_gateway::schemas::property::PropertyViewing{
-            .id = viewing_id,
-            .user_id = new_viewing.user_id,
-            .date = userver::utils::datetime::DateFromRFC3339String(
-                new_viewing.date),
+            .id = userver::utils::ToString(viewing_id),
+            .user_id = userver::utils::ToString(new_viewing.user_id),
+            .date = new_viewing.viewing_date,
         });
+  } catch (const components::viewing_storage::ViewingDateTaken&) {
+    if (isTakenByCurrentUser(viewing_storage_, user_id, property_id,
+                             request_body.date)) {
+      return common::Response(userver::http::StatusCode::kNotModified);
+    } else {
+      throw common::HttpError(userver::http::StatusCode::BadRequest,
+                              "Viewing date already taken");
+    }
   } catch (const components::property_storage::PropertyNotFound&) {
     throw common::HttpError(userver::http::StatusCode::NotFound,
                             "Property not found");

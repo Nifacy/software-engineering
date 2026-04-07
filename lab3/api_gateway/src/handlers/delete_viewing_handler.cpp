@@ -1,3 +1,4 @@
+#include <handlers/common/utils.hpp>
 #include <handlers/delete_viewing_handler.hpp>
 #include <schemas/property.hpp>
 #include <userver/components/component_context.hpp>
@@ -20,7 +21,8 @@ DeleteViewingHandler::DeleteViewingHandler(
 
 std::optional<components::viewing_storage::Viewing> TryGetViewing(
     const components::viewing_storage::ViewingStorage& viewing_storage,
-    const std::string& property_id, const std::string& viewing_id) {
+    const boost::uuids::uuid& property_id,
+    const boost::uuids::uuid& viewing_id) {
   try {
     const auto viewing = viewing_storage.GetViewing(viewing_id);
     if (viewing.property_id == property_id) {
@@ -36,27 +38,32 @@ std::optional<components::viewing_storage::Viewing> TryGetViewing(
 handlers::common::Response DeleteViewingHandler::HandleRequestImpl(
     const userver::server::http::HttpRequest& request,
     userver::server::request::RequestContext& request_context) const {
-  const auto property_id = request.GetPathArg("property_id");
+  const auto property_id =
+      handlers::common::TryGetUuidPathArgs(request, "property_id");
   const auto user_id = request_context.GetData<boost::uuids::uuid>("user_id");
-  const auto viewing_id = request.GetPathArg("viewing_id");
+  const auto viewing_id =
+      handlers::common::TryGetUuidPathArgs(request, "viewing_id");
 
-  const auto maybe_property =
-      TryGetViewing(viewing_storage_, property_id, viewing_id);
-
-  if (!maybe_property.has_value()) {
+  if (!property_id.has_value() || !viewing_id.has_value()) {
     throw handlers::common::HttpError(
-        userver::server::http::HttpStatus::NotFound,
-        "Viewing with ID '" + viewing_id + "' not found");
+        userver::server::http::HttpStatus::NotFound, "Viewing not found");
   }
 
-  // TODO: remove this
-  if ((*maybe_property).user_id != userver::utils::ToString(user_id)) {
+  const auto maybe_viewing =
+      TryGetViewing(viewing_storage_, *property_id, *viewing_id);
+
+  if (!maybe_viewing.has_value()) {
+    throw handlers::common::HttpError(
+        userver::server::http::HttpStatus::NotFound, "Viewing not found");
+  }
+
+  if ((*maybe_viewing).user_id != user_id) {
     throw handlers::common::HttpError(
         userver::server::http::HttpStatus::kForbidden,
         "You don't have permission to delete this viewing");
   }
 
-  viewing_storage_.DeleteViewing(viewing_id);
+  viewing_storage_.DeleteViewing(*viewing_id);
   return handlers::common::Response(
       userver::server::http::HttpStatus::NoContent);
 }

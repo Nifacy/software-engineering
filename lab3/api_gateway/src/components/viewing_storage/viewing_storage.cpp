@@ -1,71 +1,90 @@
 #include <components/viewing_storage/viewing_storage.hpp>
+#include <queries/sql_queries.hpp>
+#include <userver/components/component_context.hpp>
+#include <userver/storages/postgres/component.hpp>
+#include <userver/storages/postgres/io/date.hpp>
+#include <userver/utils/boost_uuid4.hpp>
+#include <userver/utils/datetime.hpp>
 
 namespace components::viewing_storage {
 
-ViewingAlreadyExists::ViewingAlreadyExists(const std::string& viewing_id)
-    : std::runtime_error("Viewing with ID '" + viewing_id +
-                         "' already exists") {}
+ViewingNotFound::ViewingNotFound(const boost::uuids::uuid& viewing_id)
+    : std::runtime_error("Viewing with ID '" +
+                         userver::utils::ToString(viewing_id) + "' not found") {
+}
 
-ViewingNotFound::ViewingNotFound(const std::string& viewing_id)
-    : std::runtime_error("Viewing with ID '" + viewing_id + "' not found") {}
+ViewingDateTaken::ViewingDateTaken()
+    : std::runtime_error("Viewing date already taken") {}
 
 ViewingStorage::ViewingStorage(
     const userver::components::ComponentConfig& config,
     const userver::components::ComponentContext& context)
-    : ComponentBase(config, context), storage_() {}
+    : ComponentBase(config, context),
+      cluster_(context.FindComponent<userver::components::Postgres>("database")
+                   .GetCluster()) {}
 
-void ViewingStorage::CreateViewing(const std::string& viewing_id,
-                                   const Viewing& viewing) {
-  if (storage_.find(viewing_id) != storage_.end()) {
-    throw ViewingAlreadyExists(viewing_id);
+boost::uuids::uuid ViewingStorage::CreateViewing(const Viewing& viewing) {
+  auto transaction = cluster_->Begin(
+      "create_viewing", userver::storages::postgres::ClusterHostType::kMaster,
+      userver::storages::postgres::Transaction::RW);
+
+  try {
+    const auto result =
+        transaction.Execute(queries::sql::kCreateViewing, viewing.user_id,
+                            viewing.property_id, viewing.viewing_date);
+    transaction.Commit();
+    return result.AsSingleRow<boost::uuids::uuid>();
+  } catch (const userver::storages::postgres::UniqueViolation&) {
+    throw ViewingDateTaken();
   }
-
-  storage_.emplace(viewing_id, std::move(viewing));
 }
 
-void ViewingStorage::DeleteViewing(const std::string& viewing_id) {
-  auto it = storage_.find(viewing_id);
-  if (it == storage_.end()) {
+void ViewingStorage::DeleteViewing(const boost::uuids::uuid& viewing_id) {
+  auto transaction = cluster_->Begin(
+      "delete_viewing", userver::storages::postgres::ClusterHostType::kMaster,
+      userver::storages::postgres::Transaction::RW);
+
+  const auto result =
+      transaction.Execute(queries::sql::kDeleteViewing, viewing_id);
+
+  if (result.IsEmpty()) {
     throw ViewingNotFound(viewing_id);
   }
-  storage_.erase(it);
+
+  transaction.Commit();
 }
 
-Viewing ViewingStorage::GetViewing(const std::string& viewing_id) const {
-  auto it = storage_.find(viewing_id);
-  if (it == storage_.end()) {
+Viewing ViewingStorage::GetViewing(const boost::uuids::uuid& viewing_id) const {
+  const auto result =
+      cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlave,
+                        queries::sql::kGetViewingById, viewing_id);
+
+  if (result.IsEmpty()) {
     throw ViewingNotFound(viewing_id);
   }
-  return it->second;
+
+  return result.AsSingleRow<Viewing>();
 }
 
-std::vector<std::string> ViewingStorage::FindViewingsInternal(
-    const std::optional<std::string>& user_id,
-    const std::optional<std::string>& property_id) const {
-  std::vector<std::string> result;
+std::vector<boost::uuids::uuid> ViewingStorage::FindViewingsInternal(
+    const std::optional<boost::uuids::uuid>& user_id,
+    const std::optional<boost::uuids::uuid>& property_id) const {
+  const auto result =
+      cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlave,
+                        queries::sql::kFindViewings, user_id, property_id);
 
-  for (const auto& [id, viewing] : storage_) {
-    bool match_user = !user_id.has_value() || (viewing.user_id == *user_id);
-    bool match_property =
-        !property_id.has_value() || (viewing.property_id == *property_id);
-
-    if (match_user && match_property) {
-      result.push_back(id);
-    }
-  }
-
-  return result;
+  return result.AsContainer<std::vector<boost::uuids::uuid>>();
 }
 
-std::vector<std::string> ViewingStorage::FindViewings(
-    const std::optional<std::string>& user_id,
-    const std::string& property_id) const {
+std::vector<boost::uuids::uuid> ViewingStorage::FindViewings(
+    const std::optional<boost::uuids::uuid>& user_id,
+    const boost::uuids::uuid& property_id) const {
   return FindViewingsInternal(user_id, property_id);
 }
 
-std::vector<std::string> ViewingStorage::FindViewings(
-    const std::string& user_id,
-    const std::optional<std::string>& property_id) const {
+std::vector<boost::uuids::uuid> ViewingStorage::FindViewings(
+    const boost::uuids::uuid& user_id,
+    const std::optional<boost::uuids::uuid>& property_id) const {
   return FindViewingsInternal(user_id, property_id);
 }
 
