@@ -1,6 +1,7 @@
 #include <handlers/find_properties_handler.hpp>
 #include <schemas/property.hpp>
 #include <userver/components/component_context.hpp>
+#include <userver/utils/boost_uuid4.hpp>
 
 namespace handlers::find_properties_handler {
 
@@ -32,6 +33,17 @@ std::optional<int> FindPropertiesHandler::TryGetIntArg(
   }
 }
 
+std::vector<std::string> serializePropertyIds(
+    const std::vector<boost::uuids::uuid>& property_ids) {
+  std::vector<std::string> result;
+
+  for (const auto& el : property_ids) {
+    result.push_back(userver::utils::ToString(el));
+  }
+
+  return result;
+}
+
 common::Response FindPropertiesHandler::HandleRequestImpl(
     const userver::server::http::HttpRequest& request,
     userver::server::request::RequestContext&) const {
@@ -42,7 +54,7 @@ common::Response FindPropertiesHandler::HandleRequestImpl(
   return common::Response(
       userver::http::StatusCode::OK,
       api_gateway::schemas::property::FindPropertiesResponse{
-          .propertyIds = property_ids,
+          .propertyIds = serializePropertyIds(property_ids),
       });
 }
 

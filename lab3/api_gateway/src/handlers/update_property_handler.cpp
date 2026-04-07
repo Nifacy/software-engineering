@@ -1,8 +1,10 @@
 #include <handlers/common/utils.hpp>
 #include <handlers/update_property_handler.hpp>
+#include <iostream>
 #include <schemas/common.hpp>
 #include <schemas/property.hpp>
 #include <userver/components/component_context.hpp>
+#include <userver/utils/boost_uuid4.hpp>
 
 namespace handlers::update_property_handler {
 
@@ -30,10 +32,22 @@ UpdatePropertyHandler::UpdatePropertyHandler(
 common::Response UpdatePropertyHandler::HandleRequestImpl(
     const userver::server::http::HttpRequest& request,
     userver::server::request::RequestContext& request_context) const {
-  const auto user_id = request_context.GetData<std::string>("user_id");
-  const auto property_id = request.GetPathArg("id");
+  const auto user_id = request_context.GetData<boost::uuids::uuid>("user_id");
+  const auto maybe_property_id =
+      handlers::common::TryGetUuidPathArgs(request, "id");
+
+  std::cout << "[DEBUG] Property id: " << request.GetPathArg("id") << std::endl;
+
   const auto request_body = ParseRequestBody<
       api_gateway::schemas::property::UpdatePropertyRequestBody>(request);
+
+  if (!maybe_property_id.has_value()) {
+    std::cout << "[DEBUG] Received property is not a valid UUID" << std::endl;
+    throw common::HttpError(userver::http::StatusCode::NotFound,
+                            "Property not found");
+  }
+
+  const auto property_id = *maybe_property_id;
 
   try {
     auto property = property_storage_.GetProperty(property_id);
@@ -43,31 +57,29 @@ common::Response UpdatePropertyHandler::HandleRequestImpl(
           "You don't have permission to update this property");
     }
 
-    if (request_body.price.has_value()) {
-      property.price = *request_body.price;
-    }
+    const auto maybe_property_status =
+        request_body.status.has_value()
+            ? std::optional(DeserializePropertyStatus(*request_body.status))
+            : std::nullopt;
 
-    if (request_body.status.has_value()) {
-      property.status = DeserializePropertyStatus(*request_body.status);
-    }
+    property_storage_.UpdateProperty(property_id, maybe_property_status,
+                                     request_body.price);
 
-    property_storage_.UpdateProperty(property_id, property);
-
-    request.SetResponseStatus(userver::http::StatusCode::OK);
+    property = property_storage_.GetProperty(property_id);
 
     return common::Response(
         userver::http::StatusCode::OK,
         api_gateway::schemas::property::Property{
-            .id = property_id,
+            .id = userver::utils::ToString(property_id),
             .address = common::SerializeAddress(property.address),
-            .ownerId = property.owner_id,
+            .ownerId = userver::utils::ToString(property.owner_id),
             .status = common::SerializePropertyStatus(property.status),
             .price = property.price,
         });
 
   } catch (const components::property_storage::PropertyNotFound&) {
     throw common::HttpError(userver::http::StatusCode::NotFound,
-                            "Property with ID '" + property_id + "' not found");
+                            "Property not found");
   }
 }
 

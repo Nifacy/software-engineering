@@ -21,7 +21,7 @@ class UserAlreadyExistsException : public std::runtime_error {
 
 class UserNotFound : public std::runtime_error {
  public:
-  explicit UserNotFound(const std::string& user_id);
+  explicit UserNotFound(const boost::uuids::uuid& user_id);
 };
 
 class UserStorage final : public userver::components::ComponentBase {
@@ -31,14 +31,14 @@ class UserStorage final : public userver::components::ComponentBase {
   explicit UserStorage(const userver::components::ComponentConfig& config,
                        const userver::components::ComponentContext& context);
 
-  std::string CreateUser(const User& user);
+  boost::uuids::uuid CreateUser(const User& user);
 
-  std::vector<std::string> FindUsers(
+  std::vector<boost::uuids::uuid> FindUsers(
       const std::optional<std::string>& login_pattern,
       const std::optional<std::string>& first_name_pattern,
       const std::optional<std::string>& last_name_pattern) const;
 
-  User GetUser(const std::string& user_id) const;
+  User GetUser(const boost::uuids::uuid& user_id) const;
 
  private:
   userver::storages::postgres::ClusterPtr cluster_;

@@ -3,7 +3,7 @@
 #include <schemas/auth.hpp>
 #include <userver/components/component_context.hpp>
 #include <userver/server/http/http_status.hpp>
-#include <userver/utils/uuid4.hpp>
+#include <userver/utils/boost_uuid4.hpp>
 
 namespace handlers::register_handler {
 
@@ -36,11 +36,12 @@ common::Response RegisterHandler::HandleRequestImpl(
 
     const components::credentials_storage::Credentials credentials{
         .verify_secret = request_body.password,
-        .payload = user_id,
+        .user_id = user_id,
     };
     credentials_storage_.AddCredentials(request_body.login, credentials);
 
-    const auto token_pair = jwt_auth_.GenerateToken(user_id);
+    const auto token_pair =
+        jwt_auth_.GenerateToken(userver::utils::ToString(user_id));
     return common::Response(userver::http::StatusCode::Created,
                             api_gateway::schemas::auth::TokenPair{
                                 .accessToken = token_pair.access_token,

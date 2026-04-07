@@ -1,3 +1,4 @@
+#include <handlers/common/utils.hpp>
 #include <handlers/find_users_handler.hpp>
 #include <schemas/user.hpp>
 #include <userver/components/component_context.hpp>
@@ -18,10 +19,11 @@ common::Response FindUsersHandler::HandleRequestImpl(
                                                 TryGetArg(request, "firstName"),
                                                 TryGetArg(request, "lastName"));
 
-  return common::Response(userver::http::StatusCode::OK,
-                          api_gateway::schemas::user::UserIds{
-                              .userIds = user_ids,
-                          });
+  return common::Response(
+      userver::http::StatusCode::OK,
+      api_gateway::schemas::user::UserIds{
+          .userIds = handlers::common::ConvertUuidToString(user_ids),
+      });
 }
 
 }  // namespace handlers::find_users_handler

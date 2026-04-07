@@ -7,11 +7,6 @@
 
 namespace components::credentials_storage {
 
-struct credentialsRow {
-  std::string verify_secret;
-  boost::uuids::uuid user_id;
-};
-
 CredentialsAlreadyExists::CredentialsAlreadyExists(const std::string& key)
     : std::runtime_error("Credentials by key '" + key + "' already exist") {}
 
@@ -37,9 +32,9 @@ void CredentialsStorage::AddCredentials(const std::string& key,
         "create_user", userver::storages::postgres::ClusterHostType::kMaster,
         userver::storages::postgres::Transaction::RW);
 
-    const auto result = transaction.Execute(
-        queries::sql::kCreateCredentials, key, credentials.verify_secret,
-        userver::utils::BoostUuidFromString(credentials.payload));
+    const auto result =
+        transaction.Execute(queries::sql::kCreateCredentials, key,
+                            credentials.verify_secret, credentials.user_id);
 
     transaction.Commit();
   } catch (const userver::storages::postgres::UniqueViolation& e) {
@@ -47,7 +42,7 @@ void CredentialsStorage::AddCredentials(const std::string& key,
   }
 }
 
-std::string CredentialsStorage::VerifyCredentials(
+boost::uuids::uuid CredentialsStorage::VerifyCredentials(
     const std::string& key, const std::string& verify_secret) const {
   const auto result =
       cluster_->Execute(userver::storages::postgres::ClusterHostType::kSlave,
@@ -56,12 +51,12 @@ std::string CredentialsStorage::VerifyCredentials(
     throw CredentialsNotFound(key);
   }
 
-  const auto credentials = result.AsSingleRow<credentialsRow>();
+  const auto credentials = result.AsSingleRow<Credentials>();
   if (credentials.verify_secret != verify_secret) {
     throw InvalidVerifySecret(key);
   }
 
-  return userver::utils::ToString(credentials.user_id);
+  return credentials.user_id;
 }
 
 }  // namespace components::credentials_storage

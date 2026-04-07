@@ -1,6 +1,8 @@
+#include <handlers/common/utils.hpp>
 #include <handlers/schedule_viewing_handler.hpp>
 #include <schemas/property.hpp>
 #include <userver/components/component_context.hpp>
+#include <userver/utils/boost_uuid4.hpp>
 #include <userver/utils/datetime/date.hpp>
 #include <userver/utils/uuid4.hpp>
 
@@ -20,10 +22,18 @@ ScheduleViewingHandler::ScheduleViewingHandler(
 common::Response ScheduleViewingHandler::HandleRequestImpl(
     const userver::server::http::HttpRequest& request,
     userver::server::request::RequestContext& request_context) const {
-  const auto property_id = request.GetPathArg("id");
-  const auto user_id = request_context.GetData<std::string>("user_id");
+  const auto maybe_property_id =
+      handlers::common::TryGetUuidPathArgs(request, "id");
+  const auto user_id = request_context.GetData<boost::uuids::uuid>("user_id");
   const auto request_body = ParseRequestBody<
       api_gateway::schemas::property::ScheduleViewingRequestBody>(request);
+
+  if (!maybe_property_id.has_value()) {
+    throw common::HttpError(userver::http::StatusCode::NotFound,
+                            "Property not found");
+  }
+
+  const auto property_id = *maybe_property_id;
 
   try {
     const auto property = property_storage_.GetProperty(property_id);
@@ -39,11 +49,11 @@ common::Response ScheduleViewingHandler::HandleRequestImpl(
     const auto viewing_date =
         userver::utils::datetime::ToString(request_body.date);
 
-    for (const auto& viewing_id :
-         viewing_storage_.FindViewings(std::nullopt, property_id)) {
+    for (const auto& viewing_id : viewing_storage_.FindViewings(
+             std::nullopt, userver::utils::ToString(property_id))) {
       const auto viewing = viewing_storage_.GetViewing(viewing_id);
       if (viewing.date == viewing_date) {
-        if (viewing.user_id == user_id) {
+        if (viewing.user_id == userver::utils::ToString(user_id)) {
           return common::Response(userver::http::StatusCode::kNotModified);
         } else {
           throw common::HttpError(userver::http::StatusCode::BadRequest,
@@ -53,8 +63,8 @@ common::Response ScheduleViewingHandler::HandleRequestImpl(
     }
 
     const components::viewing_storage::Viewing new_viewing{
-        .user_id = user_id,
-        .property_id = property_id,
+        .user_id = userver::utils::ToString(user_id),
+        .property_id = userver::utils::ToString(property_id),
         .date = userver::utils::datetime::ToString(request_body.date),
     };
 
@@ -70,7 +80,7 @@ common::Response ScheduleViewingHandler::HandleRequestImpl(
         });
   } catch (const components::property_storage::PropertyNotFound&) {
     throw common::HttpError(userver::http::StatusCode::NotFound,
-                            "Property with ID '" + property_id + "' not found");
+                            "Property not found");
   }
 }
 

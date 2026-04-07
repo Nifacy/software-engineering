@@ -29,7 +29,7 @@ async def test_creates_property(service_client: pytest_userver.client.Client):
     creation_payload = utils.get_property_creation_payload()
 
     response = await service_client.post('/api/v1/properties', json=creation_payload, headers=utils.get_auth_headers(token))
-    response.status == 201
+    assert response.status == 201
 
     created_property = response.json()
     assert created_property == {
@@ -44,7 +44,7 @@ async def test_creates_property(service_client: pytest_userver.client.Client):
 async def test_unable_to_create_if_unauthorized(service_client: pytest_userver.client.Client):
     creation_payload = utils.get_property_creation_payload()
     response = await service_client.post('/api/v1/properties', json=creation_payload)
-    response.status == 401
+    assert response.status == 400
 
 
 @pytest.mark.parametrize(
@@ -57,7 +57,7 @@ async def test_unable_to_create_if_unauthorized(service_client: pytest_userver.c
 async def test_validates_creation_payload(service_client: pytest_userver.client.Client, payload: dict[str, Any]):
     token, _ = await utils.create_user(service_client)
     response = await service_client.post('/api/v1/properties', json=payload, headers=utils.get_auth_headers(token))
-    response.status == 400
+    assert response.status == 400
 
 
 # Get poroperty
@@ -65,7 +65,7 @@ async def test_validates_creation_payload(service_client: pytest_userver.client.
 
 async def test_raises_if_property_not_exists(service_client: pytest_userver.client.Client):
     response = await service_client.get('/api/v1/properties/unknown')
-    response.status == 404
+    assert response.status == 404
 
 
 async def test_returns_found_property(service_client: pytest_userver.client.Client):
@@ -74,7 +74,7 @@ async def test_returns_found_property(service_client: pytest_userver.client.Clie
     property_id = property['id']
 
     response = await service_client.get(f'/api/v1/properties/{property_id}')
-    response.status == 200
+    assert response.status == 200
 
     found_property = response.json()
     assert found_property == property
@@ -98,8 +98,7 @@ async def test_updates_property(service_client: pytest_userver.client.Client, pa
     property_id = property['id']
 
     response = await service_client.patch(f'/api/v1/properties/{property_id}', json=payload, headers=utils.get_auth_headers(token))
-    response.status == 200
-
+    assert response.status == 200
     assert response.json() == {**property, **payload}
 
 
@@ -114,7 +113,7 @@ async def test_update_not_authorized(service_client: pytest_userver.client.Clien
 async def test_raises_if_update_unknown_property(service_client: pytest_userver.client.Client):
     token, _ = await utils.create_user(service_client)
     response = await service_client.patch('/api/v1/properties/unknown', json=_get_update_payload(), headers=utils.get_auth_headers(token))
-    response.status == 404
+    assert response.status == 404
 
 
 @pytest.mark.parametrize(
@@ -131,7 +130,7 @@ async def test_validates_update_payload(service_client: pytest_userver.client.Cl
     property_id = property['id']
 
     response = await service_client.patch(f'/api/v1/properties/{property_id}', json=payload, headers=utils.get_auth_headers(token))
-    response.status == 400
+    assert response.status == 400
 
 
 async def test_validates_if_update_owned_property(service_client: pytest_userver.client.Client):

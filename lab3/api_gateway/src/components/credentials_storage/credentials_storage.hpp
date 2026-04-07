@@ -1,5 +1,6 @@
 #pragma once
 
+#include <boost/uuid/uuid.hpp>
 #include <stdexcept>
 #include <string>
 #include <userver/components/component_base.hpp>
@@ -9,7 +10,7 @@ namespace components::credentials_storage {
 
 struct Credentials {
   std::string verify_secret;
-  std::string payload;
+  boost::uuids::uuid user_id;
 };
 
 class CredentialsAlreadyExists : std::runtime_error {
@@ -37,8 +38,8 @@ class CredentialsStorage final : public userver::components::ComponentBase {
 
   void AddCredentials(const std::string& key, const Credentials& credentials);
 
-  std::string VerifyCredentials(const std::string& key,
-                                const std::string& verify_secret) const;
+  boost::uuids::uuid VerifyCredentials(const std::string& key,
+                                       const std::string& verify_secret) const;
 
  private:
   userver::storages::postgres::ClusterPtr cluster_;

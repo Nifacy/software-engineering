@@ -1,6 +1,7 @@
 #include <handlers/get_current_user_handler.hpp>
 #include <schemas/user.hpp>
 #include <userver/components/component_context.hpp>
+#include <userver/utils/boost_uuid4.hpp>
 
 namespace handlers::get_current_user_handler {
 
@@ -14,12 +15,12 @@ GetCurrentUserHandler::GetCurrentUserHandler(
 common::Response GetCurrentUserHandler::HandleRequestImpl(
     const userver::server::http::HttpRequest&,
     userver::server::request::RequestContext& request_context) const {
-  const auto user_id = request_context.GetData<std::string>("user_id");
+  const auto user_id = request_context.GetData<boost::uuids::uuid>("user_id");
   const auto user = user_storage_.GetUser(user_id);
 
   return common::Response(userver::http::StatusCode::OK,
                           api_gateway::schemas::user::UserInfo{
-                              .id = user_id,
+                              .id = userver::utils::ToString(user_id),
                               .login = user.login,
                               .firstName = user.first_name,
                               .lastName = user.last_name,

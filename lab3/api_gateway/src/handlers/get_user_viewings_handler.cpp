@@ -1,6 +1,7 @@
 #include <handlers/get_user_viewings_handler.hpp>
 #include <schemas/user.hpp>
 #include <userver/components/component_context.hpp>
+#include <userver/utils/boost_uuid4.hpp>
 #include <userver/utils/datetime/date.hpp>
 
 namespace handlers::get_user_viewings_handler {
@@ -26,11 +27,11 @@ GetUserViewingsHandler::GetUserViewingsHandler(
 common::Response GetUserViewingsHandler::HandleRequestImpl(
     const userver::server::http::HttpRequest&,
     userver::server::request::RequestContext& request_context) const {
-  const auto user_id = request_context.GetData<std::string>("user_id");
+  const auto user_id = request_context.GetData<boost::uuids::uuid>("user_id");
   api_gateway::schemas::user::UserViewingList response_dom;
 
-  for (const auto& viewing_id :
-       viewing_storage_.FindViewings(user_id, std::nullopt)) {
+  for (const auto& viewing_id : viewing_storage_.FindViewings(
+           userver::utils::ToString(user_id), std::nullopt)) {
     const auto viewing = viewing_storage_.GetViewing(viewing_id);
     response_dom.viewings.push_back(SerializeViewing(viewing_id, viewing));
   }

@@ -1,6 +1,7 @@
 #include <handlers/delete_viewing_handler.hpp>
 #include <schemas/property.hpp>
 #include <userver/components/component_context.hpp>
+#include <userver/utils/boost_uuid4.hpp>
 #include <userver/utils/datetime/date.hpp>
 #include <userver/utils/uuid4.hpp>
 
@@ -36,7 +37,7 @@ handlers::common::Response DeleteViewingHandler::HandleRequestImpl(
     const userver::server::http::HttpRequest& request,
     userver::server::request::RequestContext& request_context) const {
   const auto property_id = request.GetPathArg("property_id");
-  const auto user_id = request_context.GetData<std::string>("user_id");
+  const auto user_id = request_context.GetData<boost::uuids::uuid>("user_id");
   const auto viewing_id = request.GetPathArg("viewing_id");
 
   const auto maybe_property =
@@ -48,7 +49,8 @@ handlers::common::Response DeleteViewingHandler::HandleRequestImpl(
         "Viewing with ID '" + viewing_id + "' not found");
   }
 
-  if ((*maybe_property).user_id != user_id) {
+  // TODO: remove this
+  if ((*maybe_property).user_id != userver::utils::ToString(user_id)) {
     throw handlers::common::HttpError(
         userver::server::http::HttpStatus::kForbidden,
         "You don't have permission to delete this viewing");

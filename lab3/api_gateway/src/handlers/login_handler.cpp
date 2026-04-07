@@ -3,6 +3,7 @@
 #include <schemas/auth.hpp>
 #include <userver/components/component_context.hpp>
 #include <userver/server/http/http_status.hpp>
+#include <userver/utils/boost_uuid4.hpp>
 
 namespace handlers::login_handler {
 
@@ -25,7 +26,9 @@ common::Response LoginHandler::HandleRequestImpl(
     const auto user_id = credentials_storage_.VerifyCredentials(
         request_body.login, request_body.password);
 
-    const auto token_pair = jwt_auth_.GenerateToken(user_id);
+    const auto token_pair =
+        jwt_auth_.GenerateToken(userver::utils::ToString(user_id));
+
     return common::Response(userver::http::StatusCode::OK,
                             api_gateway::schemas::auth::TokenPair{
                                 .accessToken = token_pair.access_token,

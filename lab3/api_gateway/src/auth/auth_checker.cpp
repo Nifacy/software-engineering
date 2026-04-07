@@ -2,6 +2,7 @@
 
 #include <userver/components/component.hpp>
 #include <userver/http/common_headers.hpp>
+#include <userver/utils/boost_uuid4.hpp>
 
 namespace auth {
 
@@ -37,7 +38,9 @@ AuthChecker::AuthCheckResult AuthChecker::CheckAuth(
       std::string(auth_header.substr(kAlgorithm.length()));
 
   try {
-    request_context.SetData("user_id", jwt_auth_.ValidateToken(access_token));
+    const auto payload = jwt_auth_.ValidateToken(access_token);
+    const auto user_id = userver::utils::BoostUuidFromString(payload);
+    request_context.SetData("user_id", user_id);
     return {};
   } catch (const components::jwt_auth::InvalidToken&) {
     return {
