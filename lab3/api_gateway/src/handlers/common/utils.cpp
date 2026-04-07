@@ -18,15 +18,16 @@ api_gateway::schemas::property::PropertyStatus SerializePropertyStatus(
 
 api_gateway::schemas::common::Address SerializeAddress(
     const components::property_storage::Address& address) {
-  // TODO: remove this
-  const auto apartment = address.apartment.has_value() ? *address.apartment : 0;
+  const auto apartment = address.apartment.has_value()
+                             ? std::optional((std::int32_t)*address.apartment)
+                             : std::nullopt;
 
   return {
       .country = address.country,
       .city = address.city,
       .street = address.street,
       .building = (std::int32_t)address.building,
-      .apartment = (std::int32_t)apartment,
+      .apartment = apartment,
   };
 }
 

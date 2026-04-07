@@ -1,4 +1,5 @@
 #include <handlers/common/schema_http_handler.hpp>
+#include <handlers/common/utils.hpp>
 #include <handlers/create_property_handler.hpp>
 #include <schemas/property.hpp>
 #include <userver/components/component_context.hpp>
@@ -56,23 +57,11 @@ handlers::common::Response CreatePropertyHandler::HandleRequestImpl(
 
   const auto property_id = property_storage_.CreateProperty(new_property);
 
-  // TODO: remove this
-  const auto apartment = new_property.address.apartment.has_value()
-                             ? *new_property.address.apartment
-                             : 0;
-
   return handlers::common::Response(
       userver::server::http::HttpStatus::Created,
       api_gateway::schemas::property::Property{
           .id = userver::utils::ToString(property_id),
-          .address =
-              {
-                  .country = new_property.address.country,
-                  .city = new_property.address.city,
-                  .street = new_property.address.street,
-                  .building = (std::int32_t)new_property.address.building,
-                  .apartment = (std::int32_t)apartment,
-              },
+          .address = handlers::common::SerializeAddress(new_property.address),
           .ownerId = userver::utils::ToString(user_id),
           .status = SerializePropertyStatus(new_property.status),
           .price = new_property.price,
