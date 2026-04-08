@@ -36,13 +36,10 @@ common::Response UpdatePropertyHandler::HandleRequestImpl(
   const auto maybe_property_id =
       handlers::common::TryGetUuidPathArgs(request, "id");
 
-  std::cout << "[DEBUG] Property id: " << request.GetPathArg("id") << std::endl;
-
   const auto request_body = ParseRequestBody<
       api_gateway::schemas::property::UpdatePropertyRequestBody>(request);
 
   if (!maybe_property_id.has_value()) {
-    std::cout << "[DEBUG] Received property is not a valid UUID" << std::endl;
     throw common::HttpError(userver::http::StatusCode::NotFound,
                             "Property not found");
   }
