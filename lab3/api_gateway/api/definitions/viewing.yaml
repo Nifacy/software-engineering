@@ -1,0 +1,33 @@
+components:
+  schemas:
+    Viewing:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          minLength: 1
+        user_id:
+          type: string
+          minLength: 1
+        property_id:
+          type: string
+          minLength: 1
+        date:
+          type: string
+          format: date
+      required:
+      - id
+      - user_id
+      - property_id
+      - date
+
+    ScheduleViewingRequestBody:
+      type: object
+      additionalProperties: false
+      properties:
+        date:
+          type: string
+          format: date
+      required:
+      - date

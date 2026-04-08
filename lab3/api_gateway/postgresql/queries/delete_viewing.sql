@@ -1,0 +1,3 @@
+DELETE FROM viewings
+WHERE id = $1
+RETURNING id;

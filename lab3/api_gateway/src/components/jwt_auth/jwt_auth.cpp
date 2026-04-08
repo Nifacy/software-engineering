@@ -1,6 +1,6 @@
 #include <jwt-cpp/jwt.h>
 
-#include <components/jwt_auth.hpp>
+#include <components/jwt_auth/jwt_auth.hpp>
 #include <userver/components/component_config.hpp>
 #include <userver/yaml_config/merge_schemas.hpp>
 
@@ -27,7 +27,6 @@ std::string createToken(const std::string& payload,
 
 std::string validateToken(const std::string& token, const std::string& secret,
                           const std::string& issuer) {
-
   try {
     auto verifier = jwt::verify()
                         .allow_algorithm(jwt::algorithm::hs256{secret})

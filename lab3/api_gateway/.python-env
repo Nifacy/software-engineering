@@ -1,0 +1,1 @@
+PYTHONPATH=/usr/lib/cmake/userver/testsuite/pytest_plugins:$PYTHONPATH
