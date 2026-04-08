@@ -15,10 +15,6 @@ std::string createToken(const std::string& payload,
                         const std::string& token_type) {
   auto now = std::chrono::system_clock::now();
 
-  std::cout << "[GRISHIN] Generate JWT token:" << std::endl;
-  std::cout << "- secret: " << secret << std::endl;
-  std::cout << "- token_type: " << token_type << std::endl;
-
   return jwt::create()
       .set_issuer(issuer)
       .set_type("JWS")
@@ -31,8 +27,6 @@ std::string createToken(const std::string& payload,
 
 std::string validateToken(const std::string& token, const std::string& secret,
                           const std::string& issuer) {
-  std::cout << "[GRISHIN] Validate token:" << std::endl;
-  std::cout << "- secret: " << secret << std::endl;
 
   try {
     auto verifier = jwt::verify()
