@@ -10,3 +10,4 @@
 - [`data.sql`](./utils/data.sql) - SQL скрипт для вставки тестовых данных.
 - [`queries`](./api_gateway/postgresql/queries/) - директория с SQL запросами для всех операций из варианта задания.
 - [`otimization.md`](./docs/optimization.md) - описание оптимизаций с планами выполнения.
+- [`api_gateway`](./api_gateway/) - проект из Лабораторной работы №2 с добавленной PostgresQL базой данных.

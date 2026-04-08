@@ -1,11 +1,34 @@
 version: '3.8'
 
 services:
+  db:
+    image: postgres:15-alpine
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
   api_gateway:
-    build: Dockerfile
+    build:
+      context: .
+      dockerfile: Dockerfile
     image: api_gateway:latest
+    container_name: api_gateway
+    restart: always
     ports:
       - "8080:8080"
     environment:
       - ACCESS_SECRET=${ACCESS_SECRET}
       - REFRESH_SECRET=${REFRESH_SECRET}
+      - DB_CONNECTION=postgresql://${DB_USER}:${DB_PASS}@db:5432/${DB_NAME}
+    depends_on:
+      - db
+
+volumes:
+  pgdata:
