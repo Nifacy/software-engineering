@@ -1,7 +1,6 @@
 {
     "name": "API Gateway Service",
-    "image": "ghcr.io/userver-framework/ubuntu-22.04-userver-pg-dev:v2.15",
-    // "dockerFile": "Dockerfile",
+    "dockerFile": "Dockerfile",
     "containerEnv": {
         "CCACHE_DIR": "/home/user/api_gateway/.ccache",
         "CORES_DIR": "/cores",
