@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <string>
 #include <userver/components/component_base.hpp>
-#include <userver/storages/postgres/cluster.hpp>
+#include <userver/storages/mongo/pool.hpp>
 
 namespace components::credentials_storage {
 
@@ -42,7 +42,7 @@ class CredentialsStorage final : public userver::components::ComponentBase {
                                        const std::string& verify_secret) const;
 
  private:
-  userver::storages::postgres::ClusterPtr cluster_;
+  userver::storages::mongo::PoolPtr pool_;
 };
 
 }  // namespace components::credentials_storage
