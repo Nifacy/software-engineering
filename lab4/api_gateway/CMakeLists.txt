@@ -8,7 +8,7 @@ include(DownloadUserver)
 
 find_package(
     userver
-    COMPONENTS core postgresql chaotic#
+    COMPONENTS core postgresql chaotic mongo#
     QUIET
 )
 if(NOT userver_FOUND)
@@ -52,6 +52,7 @@ target_link_libraries(
     PUBLIC userver::core #
     PUBLIC jwt-cpp::jwt-cpp #
     PUBLIC userver::postgresql #
+    PUBLIC userver::mongo #
 )
 
 # Generate schema C++ types

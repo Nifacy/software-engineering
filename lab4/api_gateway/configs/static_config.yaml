@@ -51,6 +51,9 @@ components_manager:
             blocking_task_processor: fs-task-processor
             dns_resolver: async
 
+        mongo-database:
+            dbconnection: $mongo_connection
+
         # Project components
 
         fs-cache-main:
