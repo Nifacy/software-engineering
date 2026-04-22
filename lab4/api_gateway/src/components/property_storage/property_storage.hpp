@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <string>
 #include <userver/components/component_base.hpp>
-#include <userver/storages/postgres/cluster.hpp>
+#include <userver/storages/mongo/pool.hpp>
 
 namespace components::property_storage {
 
@@ -58,7 +58,7 @@ class PropertyStorage final : public userver::components::ComponentBase {
       const std::optional<boost::uuids::uuid>& owner_id);
 
  private:
-  userver::storages::postgres::ClusterPtr cluster_;
+  userver::storages::mongo::PoolPtr pool_;
 };
 
 }  // namespace components::property_storage
