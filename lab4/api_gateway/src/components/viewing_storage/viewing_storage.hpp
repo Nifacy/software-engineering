@@ -4,7 +4,7 @@
 #include <optional>
 #include <stdexcept>
 #include <userver/components/component_base.hpp>
-#include <userver/storages/postgres/cluster.hpp>
+#include <userver/storages/mongo/pool.hpp>
 #include <userver/utils/datetime/date.hpp>
 
 namespace components::viewing_storage {
@@ -50,7 +50,7 @@ class ViewingStorage final : public userver::components::ComponentBase {
       const std::optional<boost::uuids::uuid>& user_id,
       const std::optional<boost::uuids::uuid>& property_id) const;
 
-  userver::storages::postgres::ClusterPtr cluster_;
+  userver::storages::mongo::PoolPtr pool_;
 };
 
 }  // namespace components::viewing_storage

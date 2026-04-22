@@ -10,13 +10,22 @@ pytest_plugins = (
 
 
 MONGO_COLLECTIONS = {
-    'translations': {
+    'viewings': {
         'settings': {
-            'collection': 'translations',
+            'collection': 'viewings',
             'connection': 'admin',
             'database': 'admin',
         },
-        'indexes': [],
+        'indexes': [
+            {
+                'key': [
+                    {'name': 'property_id', 'type': 'ascending'},
+                    {'name': 'viewing_date', 'type': 'ascending'}
+                ],
+                'unique': True,
+                'name': 'index_date_unique_per_property',
+            }
+        ],
     },
 }
 
