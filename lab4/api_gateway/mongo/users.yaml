@@ -1,0 +1,15 @@
+settings:
+  collection: users
+  connection: admin
+  database: admin
+
+validation_schema:
+  bsonType: "object"
+  required: [ "foo" ]
+  properties:
+    foo: { bsonType: "string" }
+
+indexes:
+- key: login
+  unique: true
+  name: index_user_login_unique

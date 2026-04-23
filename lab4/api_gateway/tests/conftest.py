@@ -8,41 +8,7 @@ pytest_plugins = (
 )
 
 
-MONGO_COLLECTIONS = {
-    'viewings': {
-        'settings': {
-            'collection': 'viewings',
-            'connection': 'admin',
-            'database': 'admin',
-        },
-        'indexes': [
-            {
-                'key': [
-                    {'name': 'property_id', 'type': 'ascending'},
-                    {'name': 'viewing_date', 'type': 'ascending'}
-                ],
-                'unique': True,
-                'name': 'index_date_unique_per_property',
-            }
-        ],
-    },
-    'users': {
-        'settings': {
-            'collection': 'users',
-            'connection': 'admin',
-            'database': 'admin',
-        },
-        'indexes': [
-            {
-                'key': 'login',
-                'unique': True,
-                'name': 'index_user_login_unique',
-            }
-        ],
-    }
-}
 
-
-@pytest.fixture(scope='session')
-def mongodb_settings():
-    return MONGO_COLLECTIONS
+@pytest.fixture
+def mongo_schema_directory(service_source_dir) -> str:
+    return service_source_dir.joinpath("mongo/")
