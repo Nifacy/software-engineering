@@ -1,6 +1,5 @@
 #include <components/property_storage/property_storage.hpp>
 #include <components/serializers.hpp>
-#include <iostream>
 #include <userver/components/component_context.hpp>
 #include <userver/formats/bson.hpp>
 #include <userver/storages/mongo/component.hpp>

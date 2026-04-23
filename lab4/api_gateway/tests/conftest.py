@@ -27,6 +27,20 @@ MONGO_COLLECTIONS = {
             }
         ],
     },
+    'users': {
+        'settings': {
+            'collection': 'users',
+            'connection': 'admin',
+            'database': 'admin',
+        },
+        'indexes': [
+            {
+                'key': 'login',
+                'unique': True,
+                'name': 'index_user_login_unique',
+            }
+        ],
+    }
 }
 
 

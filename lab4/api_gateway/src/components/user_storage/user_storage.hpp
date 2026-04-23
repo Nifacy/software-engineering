@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <string>
 #include <userver/components/component_base.hpp>
-#include <userver/storages/postgres/cluster.hpp>
+#include <userver/storages/mongo/pool.hpp>
 
 namespace components::user_storage {
 
@@ -41,7 +41,7 @@ class UserStorage final : public userver::components::ComponentBase {
   User GetUser(const boost::uuids::uuid& user_id) const;
 
  private:
-  userver::storages::postgres::ClusterPtr cluster_;
+  userver::storages::mongo::PoolPtr pool_;
 };
 
 }  // namespace components::user_storage
