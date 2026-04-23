@@ -79,20 +79,6 @@ file(COPY ${OPEN_API_FILES} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/static/docs)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/static/swagger.html DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/static/docs/)
 file(RENAME ${CMAKE_CURRENT_BINARY_DIR}/static/docs/swagger.html ${CMAKE_CURRENT_BINARY_DIR}/static/docs/index.html)
 
-# Build SQL queries
-userver_add_sql_library(
-    ${PROJECT_NAME}-sql
-    NAMESPACE
-    queries
-    SOURCE_DIR
-    postgresql/queries
-    OUTPUT_DIR
-    ${CMAKE_CURRENT_BINARY_DIR}
-    SQL_FILES
-    *.sql
-)
-target_link_libraries(${PROJECT_NAME}_objs PRIVATE ${PROJECT_NAME}-sql)
-
 # The Service
 
 add_executable(${PROJECT_NAME} src/main.cpp)

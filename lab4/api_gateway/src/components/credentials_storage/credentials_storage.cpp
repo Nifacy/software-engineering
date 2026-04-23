@@ -1,12 +1,10 @@
 #include <boost/uuid/uuid.hpp>
 #include <components/credentials_storage/credentials_storage.hpp>
 #include <components/serializers.hpp>
-#include <queries/sql_queries.hpp>
 #include <userver/components/component_context.hpp>
 #include <userver/formats/bson.hpp>
 #include <userver/storages/mongo/component.hpp>
 #include <userver/storages/mongo/mongo_error.hpp>
-#include <userver/storages/postgres/component.hpp>
 #include <userver/utils/boost_uuid4.hpp>
 
 namespace userver::formats::parse {

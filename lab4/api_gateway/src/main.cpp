@@ -30,10 +30,9 @@
 #include <userver/server/handlers/http_handler_static.hpp>
 #include <userver/server/handlers/ping.hpp>
 #include <userver/server/handlers/tests_control.hpp>
-#include <userver/storages/postgres/postgres.hpp>
+#include <userver/storages/mongo/component.hpp>
 #include <userver/testsuite/testsuite_support.hpp>
 #include <userver/utils/daemon_run.hpp>
-#include <userver/storages/mongo/component.hpp>
 
 int main(int argc, char* argv[]) {
   userver::server::handlers::auth::RegisterAuthCheckerFactory<
@@ -45,7 +44,6 @@ int main(int argc, char* argv[]) {
           .AppendComponentList(userver::clients::http::ComponentList())
           .Append<userver::components::FsCache>("fs-cache-main")
           .Append<userver::components::Mongo>("mongo-database")
-          .Append<userver::components::Postgres>("database")
           .Append<userver::clients::dns::Component>()
           .Append<userver::server::handlers::TestsControl>()
           .Append<userver::congestion_control::Component>()

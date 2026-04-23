@@ -1,6 +1,5 @@
 #include <components/serializers.hpp>
 #include <components/viewing_storage/viewing_storage.hpp>
-#include <queries/sql_queries.hpp>
 #include <userver/components/component_context.hpp>
 #include <userver/formats/bson.hpp>
 #include <userver/storages/mongo/component.hpp>

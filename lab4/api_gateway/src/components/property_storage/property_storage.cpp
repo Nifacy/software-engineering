@@ -77,28 +77,6 @@ Property Parse(const bson::Value& value, To<Property>) {
 }  // namespace userver::formats::parse
 
 namespace components::property_storage {
-enum class PostgresPropertyStatus { kActive, kSold };
-
-struct PostgresProperty {
-  boost::uuids::uuid owner_id;
-  boost::uuids::uuid address_id;
-  PostgresPropertyStatus status;
-  int price;
-};
-
-struct PostgresPropertyWithAddress {
-  boost::uuids::uuid owner_id;
-  PostgresPropertyStatus status;
-  int price;
-  std::string address__country;
-  std::string address__city;
-  std::string address__street;
-  int address__building;
-  std::optional<int> address__apartment;
-};
-}  // namespace components::property_storage
-
-namespace components::property_storage {
 
 namespace bson = userver::formats::bson;
 

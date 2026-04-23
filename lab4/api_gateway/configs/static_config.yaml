@@ -45,12 +45,6 @@ components_manager:
             method: POST
             task_processor: main-task-processor
 
-        database:
-            dbconnection: $dbconnection
-            dbconnection#env: DB_CONNECTION
-            blocking_task_processor: fs-task-processor
-            dns_resolver: async
-
         mongo-database:
             dbconnection: $mongo_connection
 
