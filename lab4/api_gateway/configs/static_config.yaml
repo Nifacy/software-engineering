@@ -47,6 +47,7 @@ components_manager:
 
         mongo-database:
             dbconnection: $mongo_connection
+            dbconnection#env: DB_CONNECTION
 
         # Project components
 

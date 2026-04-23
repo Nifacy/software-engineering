@@ -25,16 +25,22 @@ docker build . -t api_gateway:latest
 docker run \
     -e 'ACCESS_SECRET=<access-secret>' \
     -e 'REFRESH_SCRET=<refresh-secret>' \
+    -e 'DB_CONNECTION=<db-connection>'
     -p '8080:8080' \
     api_gateway:1
 ```
 
-Для упрощенного запуска проект предоставляет сборку и запуск Docker контейнера через docker compose.
+#### Docker compose
+
+Для упрощенного запуска вместе с инфраструктурными зависимостями проект предоставляет сборку и запуск через docker compose.
 Для этого необходимо создать `.env` файл, в котором необходимо прописать следующие переменные окружения
 
 ```bash
 ACCESS_SECRET="<access-secret>"
 REFRESH_SECRET="<refresh-secret>"
+MONGO_USERNAME="<mongo-username>"
+MONGO_PASSWORD="<mongo-password>"
+MONGO_DATABASE="<mongo-database>"
 ```
 
 И запустить следующую команду.
@@ -42,6 +48,13 @@ REFRESH_SECRET="<refresh-secret>"
 ```bash
 docker-compose -f ./docker-compose.yaml --env-file "<enf-file-path>" up
 ```
+
+В итоге, будет запущено 2 контейнера:
+
+- `mongo-database` - контейнер с Mongo базой данных, в которой уже инициализированны
+  валидационные схемы и индексы.
+
+- `api-gateway` - контейнер с целевым сервисом, подключенный к Mongo базе данных.
 
 ### 📍 API Endpoints
 

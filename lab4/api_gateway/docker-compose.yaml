@@ -1,34 +1,31 @@
 version: '3.8'
 
 services:
-  db:
-    image: postgres:15-alpine
-    container_name: postgres_db
+  mongo_database:
+    build:
+      context: ../mongo
+      dockerfile: Dockerfile
+    container_name: mongo-database
     restart: always
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASS}
-      POSTGRES_DB: ${DB_NAME}
     ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
 
   api_gateway:
     build:
       context: .
       dockerfile: Dockerfile
     image: api_gateway:latest
-    container_name: api_gateway
+    container_name: api-gateway
     restart: always
     ports:
       - "8080:8080"
     environment:
       - ACCESS_SECRET=${ACCESS_SECRET}
       - REFRESH_SECRET=${REFRESH_SECRET}
-      - DB_CONNECTION=postgresql://${DB_USER}:${DB_PASS}@db:5432/${DB_NAME}
+      - DB_CONNECTION=mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@database:27017/${MONGO_DATABASE}?authSource=admin
     depends_on:
-      - db
-
-volumes:
-  pgdata:
+      - mongo_database
