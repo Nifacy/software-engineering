@@ -1,0 +1,13 @@
+settings:
+  collection: viewings
+  connection: admin
+  database: admin
+
+indexes:
+- key:
+  - name: property_id
+    type: ascending
+  - name: viewing_date
+    type: ascending
+  unique: True
+  name: index_date_unique_per_property
