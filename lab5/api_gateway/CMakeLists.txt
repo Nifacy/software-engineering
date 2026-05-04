@@ -39,12 +39,14 @@ include_directories(src)
 file(GLOB_RECURSE COMPONENT_SOURCE_FILES "src/components/*.cpp")
 file(GLOB_RECURSE HANDLER_SOURCE_FILES "src/handlers/*.cpp")
 file(GLOB_RECURSE AUTH_SOURCE_FILES "src/auth/*.cpp")
+file(GLOB_RECURSE CACHE_SOURCE_FILES "src/cache/*.cpp")
 
 add_library(
     ${PROJECT_NAME}_objs OBJECT
     ${COMPONENT_SOURCE_FILES}
     ${HANDLER_SOURCE_FILES}
     ${AUTH_SOURCE_FILES}
+    ${CACHE_SOURCE_FILES}
 )
 
 target_link_libraries(

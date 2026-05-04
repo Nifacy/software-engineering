@@ -22,4 +22,5 @@ class CacheComponent final : public userver::components::ComponentBase {
   std::unordered_map<std::string, std::shared_ptr<::cache::ICache>> caches_;
   size_t cache_max_size_;
 };
+
 }  // namespace components::cache

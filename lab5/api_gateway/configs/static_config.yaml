@@ -51,6 +51,9 @@ components_manager:
 
         # Project components
 
+        cache:
+            max_size: 10
+
         fs-cache-main:
             dir: static/docs
 

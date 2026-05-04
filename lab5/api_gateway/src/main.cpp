@@ -1,4 +1,5 @@
 #include <auth/auth_checker_factory.hpp>
+#include <components/cache/cache.hpp>
 #include <components/credentials_storage/credentials_storage.hpp>
 #include <components/jwt_auth/jwt_auth.hpp>
 #include <components/property_storage/property_storage.hpp>
@@ -47,6 +48,7 @@ int main(int argc, char* argv[]) {
           .Append<userver::clients::dns::Component>()
           .Append<userver::server::handlers::TestsControl>()
           .Append<userver::congestion_control::Component>()
+          .Append<components::cache::CacheComponent>()
           .Append<components::user_storage::UserStorage>()
           .Append<components::property_storage::PropertyStorage>()
           .Append<components::jwt_auth::JwtAuthComponent>()
