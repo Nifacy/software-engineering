@@ -2,6 +2,7 @@
 
 #include <components/property_storage/property_storage.hpp>
 #include <components/viewing_storage/viewing_storage.hpp>
+#include <handlers/common/property_cache.hpp>
 #include <handlers/common/schema_http_handler.hpp>
 #include <userver/server/handlers/http_handler_base.hpp>
 
@@ -21,6 +22,7 @@ class UpdatePropertyHandler final : public common::SchemaHttpHandler {
 
  private:
   components::property_storage::PropertyStorage& property_storage_;
+  mutable handlers::common::property_cache::PropertyCache property_cache_;
 };
 
 }  // namespace handlers::update_property_handler

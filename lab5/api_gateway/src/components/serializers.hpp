@@ -2,6 +2,7 @@
 
 #include <boost/uuid/uuid.hpp>
 #include <userver/formats/bson.hpp>
+#include <userver/formats/json.hpp>
 #include <userver/utils/boost_uuid4.hpp>
 
 namespace userver::formats::parse {
@@ -20,3 +21,20 @@ inline bson::Value Serialize(const boost::uuids::uuid& value, To<bson::Value>) {
 }
 
 }  // namespace userver::formats::serialize
+
+namespace boost::uuids {
+
+// TODO: migrate on generic implementation
+inline uuid Parse(const userver::formats::json::Value& value,
+                  userver::formats::parse::To<boost::uuids::uuid>) {
+  return userver::utils::BoostUuidFromString(value.As<std::string>());
+}
+
+inline userver::formats::json::Value Serialize(
+    const uuid& value,
+    userver::formats::serialize::To<userver::formats::json::Value>) {
+  return userver::formats::json::MakeObject(
+      "value", userver::utils::ToString(value))["value"];
+}
+
+}  // namespace boost::uuids

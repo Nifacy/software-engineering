@@ -67,6 +67,17 @@ class InMemoryCache : public ICache {
       store_.erase(it);
     }
   }
+
+  std::vector<Key> keys() override {
+    std::vector<Key> keys;
+    keys.reserve(store_.size());
+
+    for (const auto& [key, _] : store_) {
+      keys.push_back(key);
+    }
+
+    return keys;
+  }
 };
 
 }  // namespace cache

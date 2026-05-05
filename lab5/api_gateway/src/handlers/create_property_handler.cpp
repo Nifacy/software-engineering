@@ -1,3 +1,4 @@
+#include <components/cache/cache.hpp>
 #include <handlers/common/schema_http_handler.hpp>
 #include <handlers/common/utils.hpp>
 #include <handlers/create_property_handler.hpp>
@@ -21,8 +22,10 @@ CreatePropertyHandler::CreatePropertyHandler(
           context.FindComponent<components::user_storage::UserStorage>()),
       property_storage_(
           context
-              .FindComponent<components::property_storage::PropertyStorage>()) {
-}
+              .FindComponent<components::property_storage::PropertyStorage>()),
+      property_cache_(
+          context.FindComponent<components::cache::CacheComponent>().GetCache(
+              "property_search")) {}
 
 PropertyStatus SerializePropertyStatus(
     const components::property_storage::PropertyStatus& status) {
@@ -56,6 +59,11 @@ handlers::common::Response CreatePropertyHandler::HandleRequestImpl(
   };
 
   const auto property_id = property_storage_.CreateProperty(new_property);
+
+  property_cache_.Invalidate({
+      .city = new_property.address.city,
+      .price = new_property.price,
+  });
 
   return handlers::common::Response(
       userver::server::http::HttpStatus::Created,

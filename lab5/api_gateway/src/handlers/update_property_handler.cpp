@@ -1,6 +1,6 @@
+#include <components/cache/cache.hpp>
 #include <handlers/common/utils.hpp>
 #include <handlers/update_property_handler.hpp>
-#include <iostream>
 #include <schemas/common.hpp>
 #include <schemas/property.hpp>
 #include <userver/components/component_context.hpp>
@@ -26,8 +26,10 @@ UpdatePropertyHandler::UpdatePropertyHandler(
     : SchemaHttpHandler(config, context),
       property_storage_(
           context
-              .FindComponent<components::property_storage::PropertyStorage>()) {
-}
+              .FindComponent<components::property_storage::PropertyStorage>()),
+      property_cache_(
+          context.FindComponent<components::cache::CacheComponent>().GetCache(
+              "property_search")) {}
 
 common::Response UpdatePropertyHandler::HandleRequestImpl(
     const userver::server::http::HttpRequest& request,
@@ -63,6 +65,11 @@ common::Response UpdatePropertyHandler::HandleRequestImpl(
                                      request_body.price);
 
     property = property_storage_.GetProperty(property_id);
+
+    property_cache_.Invalidate({
+        .city = property.address.city,
+        .price = property.price,
+    });
 
     return common::Response(
         userver::http::StatusCode::OK,

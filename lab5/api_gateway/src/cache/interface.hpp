@@ -3,6 +3,7 @@
 #include <chrono>
 #include <optional>
 #include <string>
+#include <vector>
 
 namespace cache {
 
@@ -16,6 +17,7 @@ class ICache {
   virtual void set(const Key& key, const Value& value,
                    std::chrono::seconds ttl) = 0;
   virtual void invalidate(const Key& key) = 0;
+  virtual std::vector<Key> keys() = 0;
 };
 
 }  // namespace cache

@@ -2,6 +2,7 @@
 #include <components/serializers.hpp>
 #include <userver/components/component_context.hpp>
 #include <userver/formats/bson.hpp>
+#include <userver/formats/serialize/common_containers.hpp>
 #include <userver/storages/mongo/component.hpp>
 #include <userver/utils/boost_uuid4.hpp>
 #include <userver/utils/trivial_map.hpp>
