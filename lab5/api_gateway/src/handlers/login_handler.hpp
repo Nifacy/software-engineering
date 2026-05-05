@@ -2,12 +2,12 @@
 
 #include <components/credentials_storage/credentials_storage.hpp>
 #include <components/jwt_auth/jwt_auth.hpp>
-#include <handlers/common/schema_http_handler.hpp>
+#include <handlers/common/throttled_http_handler.hpp>
 #include <userver/server/handlers/http_handler_base.hpp>
 
 namespace handlers::login_handler {
 
-class LoginHandler final : public common::SchemaHttpHandler {
+class LoginHandler final : public common::ThrottledHttpHandler {
  public:
   static constexpr std::string_view kName = "login-handler";
 
@@ -15,7 +15,7 @@ class LoginHandler final : public common::SchemaHttpHandler {
                const userver::components::ComponentContext& context);
 
  protected:
-  common::Response HandleRequestImpl(
+  common::Response HandleLimitedRequest(
       const userver::server::http::HttpRequest&,
       userver::server::request::RequestContext&) const override;
 

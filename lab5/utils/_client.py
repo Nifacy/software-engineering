@@ -57,6 +57,18 @@ class ApiClient:
             response.raise_for_status()
             return response.json["accessToken"]
 
+    async def login(self, login: str, password: str) -> str:
+        response = await self.__client.post(
+            urllib.parse.urljoin(self.__url, "api/v1/auth/login"),
+            json={
+                "login": login,
+                "password": password,
+            }
+        )
+
+        response.raise_for_status()
+        return response.json["accessToken"]
+
     async def create_property(self, token: str, property: Property) -> str:
         with self.__log_action("Create property"):
             response = await self.__client.post(

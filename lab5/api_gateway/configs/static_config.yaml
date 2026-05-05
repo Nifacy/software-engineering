@@ -51,6 +51,9 @@ components_manager:
 
         # Project components
 
+        rate-limiter:
+            load-enabled: true
+
         cache:
             max_size: 10
 
@@ -91,6 +94,9 @@ components_manager:
         login-handler:
             path: /api/v1/auth/login
             method: POST
+            max_requests: 1
+            window_size: 5
+            limiter_key: login-handler
 
         refresh-token-handler:
             path: /api/v1/auth/refresh

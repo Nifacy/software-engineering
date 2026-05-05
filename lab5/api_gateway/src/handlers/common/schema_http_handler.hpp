@@ -6,20 +6,30 @@
 
 namespace handlers::common {
 
+using ResponseHeaders = std::unordered_map<std::string, std::string>;
+
 class Response final {
  public:
   template <typename T>
-  Response(const userver::server::http::HttpStatus& status, const T& content)
+  Response(const userver::server::http::HttpStatus& status, const T& content,
+           const ResponseHeaders& response_headers)
       : status_code_(status),
         content_(userver::formats::json::ToString(
-            userver::formats::json::ValueBuilder{content}.ExtractValue())) {}
+            userver::formats::json::ValueBuilder{content}.ExtractValue())),
+        response_headers_(response_headers) {}
+
+  template <typename T>
+  Response(const userver::server::http::HttpStatus& status, const T& content)
+      : Response(status, content, {}) {}
 
   Response(const userver::server::http::HttpStatus& status);
   void ApplyToRequest(const userver::server::http::HttpRequest&, std::string&);
+  void AddHeader(const std::string& key, const std::string& value);
 
  private:
   userver::server::http::HttpStatus status_code_;
   std::optional<std::string> content_;
+  ResponseHeaders response_headers_;
 };
 
 class HttpError : std::runtime_error {

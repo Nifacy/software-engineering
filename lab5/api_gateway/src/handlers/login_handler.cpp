@@ -9,14 +9,14 @@ namespace handlers::login_handler {
 
 LoginHandler::LoginHandler(const userver::components::ComponentConfig& config,
                            const userver::components::ComponentContext& context)
-    : common::SchemaHttpHandler(config, context),
+    : common::ThrottledHttpHandler(config, context),
       credentials_storage_(
           context.FindComponent<
               components::credentials_storage::CredentialsStorage>()),
       jwt_auth_(
           context.FindComponent<components::jwt_auth::JwtAuthComponent>()) {}
 
-common::Response LoginHandler::HandleRequestImpl(
+common::Response LoginHandler::HandleLimitedRequest(
     const userver::server::http::HttpRequest& request,
     userver::server::request::RequestContext& /* context */) const {
   try {

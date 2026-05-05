@@ -3,13 +3,22 @@
 namespace handlers::common {
 
 Response::Response(const userver::http::StatusCode& status_code)
-    : status_code_(status_code), content_(std::nullopt) {}
+    : status_code_(status_code), content_(std::nullopt), response_headers_() {}
 
 void Response::ApplyToRequest(const userver::server::http::HttpRequest& request,
                               std::string& response_body) {
+  auto& response = request.GetHttpResponse();
   request.SetResponseStatus(status_code_);
-  request.GetHttpResponse().SetContentType("application/json");
+  response.SetContentType("application/json");
   response_body = content_.has_value() ? *content_ : "";
+
+  for (const auto& [key, value] : response_headers_) {
+    response.SetHeader(key, value);
+  }
+}
+
+void Response::AddHeader(const std::string& key, const std::string& value) {
+  response_headers_[key] = value;
 }
 
 HttpError::HttpError(const userver::server::http::HttpStatus& status_code,
