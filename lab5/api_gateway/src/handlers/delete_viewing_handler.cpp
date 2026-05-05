@@ -1,3 +1,4 @@
+#include <components/cache/cache.hpp>
 #include <handlers/common/utils.hpp>
 #include <handlers/delete_viewing_handler.hpp>
 #include <schemas/property.hpp>
@@ -16,8 +17,10 @@ DeleteViewingHandler::DeleteViewingHandler(
           context.FindComponent<components::viewing_storage::ViewingStorage>()),
       property_storage_(
           context
-              .FindComponent<components::property_storage::PropertyStorage>()) {
-}
+              .FindComponent<components::property_storage::PropertyStorage>()),
+      viewing_cache_(
+          context.FindComponent<components::cache::CacheComponent>().GetCache(
+              "viewing_search")) {}
 
 std::optional<components::viewing_storage::Viewing> TryGetViewing(
     const components::viewing_storage::ViewingStorage& viewing_storage,
@@ -64,6 +67,17 @@ handlers::common::Response DeleteViewingHandler::HandleRequestImpl(
   }
 
   viewing_storage_.DeleteViewing(*viewing_id);
+
+  viewing_cache_.Invalidate({
+      .entity_type = common::viewings_cache::FilterEntityType::Property,
+      .entity_id = maybe_viewing.value().property_id,
+  });
+
+  viewing_cache_.Invalidate({
+      .entity_type = common::viewings_cache::FilterEntityType::User,
+      .entity_id = maybe_viewing.value().user_id,
+  });
+
   return handlers::common::Response(
       userver::server::http::HttpStatus::NoContent);
 }

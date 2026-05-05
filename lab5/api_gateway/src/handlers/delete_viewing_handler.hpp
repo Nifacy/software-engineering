@@ -3,6 +3,7 @@
 #include <components/property_storage/property_storage.hpp>
 #include <components/viewing_storage/viewing_storage.hpp>
 #include <handlers/common/schema_http_handler.hpp>
+#include <handlers/common/viewings_cache.hpp>
 #include <userver/server/handlers/http_handler_base.hpp>
 
 namespace handlers::delete_viewing_handler {
@@ -22,6 +23,7 @@ class DeleteViewingHandler final : public handlers::common::SchemaHttpHandler {
  private:
   components::viewing_storage::ViewingStorage& viewing_storage_;
   components::property_storage::PropertyStorage& property_storage_;
+  mutable handlers::common::viewings_cache::ViewingsCache viewing_cache_;
 };
 
 }  // namespace handlers::delete_viewing_handler

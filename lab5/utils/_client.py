@@ -1,7 +1,7 @@
 import contextlib
 import dataclasses
 import time
-from typing import Iterator
+from typing import Any, Iterator
 import urllib.parse
 import _logging
 import zapros
@@ -95,6 +95,26 @@ class ApiClient:
 
             response.raise_for_status()
             return response.json["propertyIds"]
+
+    async def schedule_viewing(self, token: str, property_id: str, date: str) -> str:
+        with self.__log_action("Schedule viewing"):
+            response = await self.__client.post(
+                urllib.parse.urljoin(self.__url, f"api/v1/properties/{property_id}/viewings"),
+                headers={"Authorization": f"Bearer {token}"},
+                json={"date": date},
+            )
+
+            response.raise_for_status()
+            return response.json["id"]
+
+    async def find_property_viewings(self, property_id: str) -> list[Any]:
+        with self.__log_action("Find property viewings"):
+            response = await self.__client.get(
+                urllib.parse.urljoin(self.__url, f"api/v1/properties/{property_id}/viewings"),
+            )
+
+            response.raise_for_status()
+            return response.json
 
     @contextlib.contextmanager
     def __log_action(self, action: str) -> Iterator[None]:

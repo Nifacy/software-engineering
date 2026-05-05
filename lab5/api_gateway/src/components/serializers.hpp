@@ -38,3 +38,25 @@ inline userver::formats::json::Value Serialize(
 }
 
 }  // namespace boost::uuids
+
+namespace std {
+
+template <typename A, typename B>
+pair<A, B> Parse(const userver::formats::json::Value& value,
+                 userver::formats::parse::To<std::pair<A, B>>) {
+  value.CheckArray();
+  return {value[0].As<A>(), value[1].As<B>()};
+}
+
+template <typename A, typename B>
+userver::formats::json::Value Serialize(
+    const pair<A, B>& value,
+    userver::formats::serialize::To<userver::formats::json::Value>) {
+  userver::formats::json::ValueBuilder builder;
+  builder.PushBack(value.first);
+  builder.PushBack(value.second);
+
+  return builder.ExtractValue();
+}
+
+}  // namespace std

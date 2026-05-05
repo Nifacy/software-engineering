@@ -1,3 +1,4 @@
+#include <components/cache/cache.hpp>
 #include <handlers/common/utils.hpp>
 #include <handlers/schedule_viewing_handler.hpp>
 #include <schemas/property.hpp>
@@ -16,8 +17,10 @@ ScheduleViewingHandler::ScheduleViewingHandler(
           context.FindComponent<components::viewing_storage::ViewingStorage>()),
       property_storage_(
           context
-              .FindComponent<components::property_storage::PropertyStorage>()) {
-}
+              .FindComponent<components::property_storage::PropertyStorage>()),
+      viewing_cache_(
+          context.FindComponent<components::cache::CacheComponent>().GetCache(
+              "viewing_search")) {}
 
 bool isTakenByCurrentUser(components::viewing_storage::ViewingStorage& storage,
                           const boost::uuids::uuid& user_id,
@@ -69,6 +72,16 @@ common::Response ScheduleViewingHandler::HandleRequestImpl(
     };
 
     const auto viewing_id = viewing_storage_.CreateViewing(new_viewing);
+
+    viewing_cache_.Invalidate({
+        .entity_type = common::viewings_cache::FilterEntityType::User,
+        .entity_id = user_id,
+    });
+
+    viewing_cache_.Invalidate({
+        .entity_type = common::viewings_cache::FilterEntityType::Property,
+        .entity_id = property_id,
+    });
 
     return common::Response(
         userver::http::StatusCode::Created,
