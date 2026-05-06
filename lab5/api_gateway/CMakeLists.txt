@@ -8,7 +8,7 @@ include(DownloadUserver)
 
 find_package(
     userver
-    COMPONENTS core postgresql chaotic mongo#
+    COMPONENTS core postgresql chaotic mongo redis#
     QUIET
 )
 if(NOT userver_FOUND)
@@ -54,6 +54,7 @@ target_link_libraries(
     PUBLIC userver::core #
     PUBLIC jwt-cpp::jwt-cpp #
     PUBLIC userver::postgresql #
+    PUBLIC userver::redis #
     PUBLIC userver::mongo #
 )
 
