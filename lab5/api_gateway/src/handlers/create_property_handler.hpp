@@ -23,8 +23,6 @@ class CreatePropertyHandler final : public handlers::common::SchemaHttpHandler {
  private:
   components::user_storage::UserStorage& user_storage_;
   components::property_storage::PropertyStorage& property_storage_;
-
-  // TODO: add non-const 'HandleRequestImpl' support
   mutable handlers::common::property_cache::PropertyCache property_cache_;
 };
 
