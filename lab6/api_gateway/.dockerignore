@@ -1,0 +1,12 @@
+build-*
+.ccache/
+.devcontainer/
+Dockerfile
+Dockerfile.dev
+docker-compose.yaml
+*.md
+tests/
+mongo/
+.clang-format
+.gitignore
+.dockerignore

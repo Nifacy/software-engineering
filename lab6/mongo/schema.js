@@ -7,7 +7,7 @@ db.createCollection("users", {
             additionalProperties: false,
             required: [ "_id", "login", "first_name", "last_name" ],
             properties: {
-                _id: { bsonType: "binData" },
+                _id: { bsonType: "string" },
                 login: { bsonType: "string" },
                 first_name: { bsonType: "string" },
                 last_name: { bsonType: "string" }
@@ -25,7 +25,7 @@ db.createCollection("credentials", {
             properties: {
                 _id: { bsonType: "string" },
                 verify_secret: { bsonType: "string" },
-                user_id: { bsonType: "binData" },
+                user_id: { bsonType: "string" },
             },
         },
     },
@@ -38,10 +38,10 @@ db.createCollection("properties", {
             additionalProperties: false,
             required: [ "_id", "price", "status", "owner_id", "address" ],
             properties: {
-                _id: { bsonType: "binData" },
+                _id: { bsonType: "string" },
                 price: { bsonType: "int", minimum: 0 },
                 status: { bsonType: "string", enum: [ "active", "sold" ] },
-                owner_id: { bsonType: "binData" },
+                owner_id: { bsonType: "string" },
                 address: {
                     bsonType: "object",
                     additionalProperties: false,
@@ -66,9 +66,9 @@ db.createCollection("viewings", {
             additionalProperties: false,
             required: [ "_id", "user_id", "property_id", "viewing_date" ],
             properties: {
-                _id: { bsonType: "binData" },
-                user_id: { bsonType: "binData" },
-                property_id: { bsonType: "binData" },
+                _id: { bsonType: "string" },
+                user_id: { bsonType: "string" },
+                property_id: { bsonType: "string" },
                 viewing_date: { bsonType: "date" },
             }
         },

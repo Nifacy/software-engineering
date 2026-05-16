@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  mongo-database:
+    build:
+      context: ../mongo
+      dockerfile: Dockerfile
+    container_name: mongo-database
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
+    networks:
+      - property_service_network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api_gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: api_gateway:development
+    container_name: api-gateway
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - ACCESS_SECRET=${ACCESS_SECRET}
+      - REFRESH_SECRET=${REFRESH_SECRET}
+      - DB_CONNECTION=mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongo-database:27017/${MONGO_DATABASE}?authSource=admin
+    depends_on:
+      mongo-database:
+        condition: service_healthy
+    networks:
+      - property_service_network
+
+networks:
+  property_service_network:
+    driver: bridge

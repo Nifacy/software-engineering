@@ -2,14 +2,14 @@ openapi: 3.0.3
 info:
   title: Property Service - OpenAPI 3.0
   description: |-
-    A service for managing real estate and making an appointment to view it
+    A service for managing properties and making an appointment to view it
   termsOfService: https://swagger.io/terms/
   contact:
     email: property-service@example.com
   version: 1.0.0
 
 servers:
-- url: https://localhost:8080
+- url: http://localhost:8080
 
 tags:
 - name: auth

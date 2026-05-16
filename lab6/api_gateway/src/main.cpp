@@ -42,11 +42,11 @@ int main(int argc, char* argv[]) {
 
   auto component_list =
       userver::components::MinimalServerComponentList()
+          .Append<userver::clients::dns::Component>()
           .Append<userver::components::TestsuiteSupport>()
           .AppendComponentList(userver::clients::http::ComponentList())
           .Append<userver::components::FsCache>("fs-cache-main")
           .Append<userver::components::Mongo>("mongo-database")
-          .Append<userver::clients::dns::Component>()
           .Append<userver::server::handlers::TestsControl>()
           .Append<userver::congestion_control::Component>()
           .Append<components::cache::CacheComponent>()

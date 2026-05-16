@@ -58,7 +58,8 @@ components_manager:
             max_size: 10
 
         fs-cache-main:
-            dir: static/docs
+            dir: $docs_static_files_path
+            dir#env: DOCS_STATIC_FILES_PATH
 
         credentials-storage:
             load-enabled: true
