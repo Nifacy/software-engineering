@@ -1,0 +1,5 @@
+.service_logs/
+.ruff_cache/
+.pytest_cache/
+.venv/
+__pycache__/

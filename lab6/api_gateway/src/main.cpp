@@ -74,6 +74,7 @@ int main(int argc, char* argv[]) {
           .Append<
               handlers::get_user_properties_handler::GetUserPropertiesHandler>()
           .Append<handlers::refresh_token_handler::RefreshTokenHandler>()
+          .Append<userver::server::handlers::Ping>()
           .Append<userver::server::handlers::HttpHandlerStatic>("docs-handler");
 
   return userver::utils::DaemonMain(argc, argv, component_list);

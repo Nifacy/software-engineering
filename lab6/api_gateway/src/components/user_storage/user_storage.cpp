@@ -4,6 +4,7 @@
 #include <components/serializers.hpp>
 #include <components/user_storage/user_storage.hpp>
 #include <userver/components/component_context.hpp>
+#include <userver/logging/log.hpp>
 #include <userver/storages/mongo/component.hpp>
 #include <userver/storages/mongo/exception.hpp>
 #include <userver/utils/boost_uuid4.hpp>
@@ -52,18 +53,36 @@ boost::uuids::uuid UserStorage::CreateUser(const User& user) {
     return user_id;
   } catch (const mongo::DuplicateKeyException& e) {
     throw UserAlreadyExistsException(user.login);
+  } catch (const mongo::MongoError& e) {
+    if (e.GetKind() == mongo::MongoError::Kind::kDuplicateKey) {
+      throw UserAlreadyExistsException(user.login);
+    } else {
+      LOG_ERROR() << "Unexpected Mongo error while creating user:"
+                  << "\n- Code: " << e.Code() << "\n- Message: " << e.Message();
+      throw e;
+    }
   }
 }
 
 User UserStorage::GetUser(const boost::uuids::uuid& user_id) const {
-  const auto collection = pool_->GetCollection("users");
-  const auto result = collection.FindOne(bson::MakeDoc("_id", user_id));
+  LOG_INFO() << "Get user by ID '" << user_id << "'";
 
-  if (!result.has_value()) {
-    throw UserNotFound(user_id);
+  try {
+    const auto collection = pool_->GetCollection("users");
+    const auto result = collection.FindOne(bson::MakeDoc("_id", user_id));
+
+    if (!result.has_value()) {
+      throw UserNotFound(user_id);
+    }
+
+    return (*result).As<User>();
+  } catch (const UserNotFound& error) {
+    throw error;
+  } catch (const std::exception& error) {
+    LOG_ERROR() << "Unexpected error while getting user by ID: "
+                << error.what();
+    throw error;
   }
-
-  return (*result).As<User>();
 }
 
 std::vector<boost::uuids::uuid> UserStorage::FindUsers(

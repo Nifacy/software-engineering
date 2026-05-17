@@ -24,7 +24,8 @@ class FindPropertiesHandler final : public handlers::common::SchemaHttpHandler {
   struct FindParams;
 
   std::optional<int> TryGetIntArg(const userver::server::http::HttpRequest&,
-                                  const std::string&) const;
+                                  const std::string&,
+                                  const std::optional<int> minimum) const;
 
   std::vector<boost::uuids::uuid> FindProperties(
       const FindParams& params) const;

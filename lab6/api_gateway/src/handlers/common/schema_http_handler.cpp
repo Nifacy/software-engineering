@@ -58,6 +58,9 @@ std::string SchemaHttpHandler::HandleRequestThrow(
   } catch (const HttpError& error) {
     error.ApplyToRequest(request, response_body);
     return response_body;
+  } catch (const std::exception& error) {
+    LOG_ERROR() << "Unexpected error in '" << this->HandlerName() << "' handler: " << error.what();
+    throw error;
   }
 }
 

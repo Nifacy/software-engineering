@@ -3,7 +3,9 @@
 #include <components/serializers.hpp>
 #include <userver/components/component_context.hpp>
 #include <userver/formats/bson.hpp>
+#include <userver/logging/log.hpp>
 #include <userver/storages/mongo/component.hpp>
+#include <userver/storages/mongo/exception.hpp>
 #include <userver/storages/mongo/mongo_error.hpp>
 #include <userver/utils/boost_uuid4.hpp>
 
@@ -51,12 +53,12 @@ void CredentialsStorage::AddCredentials(const std::string& key,
                       "user_id", credentials.user_id);
 
     collection.InsertOne(document);
+  } catch (const mongo::DuplicateKeyException& e) {
+    throw CredentialsAlreadyExists(key);
   } catch (const mongo::MongoError& e) {
-    if (e.GetKind() == mongo::MongoError::Kind::kDuplicateKey) {
-      throw CredentialsAlreadyExists(key);
-    } else {
-      throw e;
-    }
+    LOG_ERROR() << "Unexpected error from Mongo while adding credentials:"
+                << "\n - Code: " << e.Code() << "\n - Message: " << e.Message();
+    throw e;
   }
 }
 

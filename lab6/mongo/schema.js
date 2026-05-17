@@ -69,7 +69,7 @@ db.createCollection("viewings", {
                 _id: { bsonType: "string" },
                 user_id: { bsonType: "string" },
                 property_id: { bsonType: "string" },
-                viewing_date: { bsonType: "date" },
+                viewing_date: { bsonType: "string" },
             }
         },
     },

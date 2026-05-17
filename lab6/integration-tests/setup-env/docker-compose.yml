@@ -3,8 +3,9 @@ version: '3.8'
 services:
   mongo-database:
     build:
-      context: ../mongo
+      context: ../../mongo
       dockerfile: Dockerfile
+    image: mongo_database
     container_name: mongo-database
     restart: always
     ports:
@@ -23,7 +24,7 @@ services:
 
   api_gateway:
     build:
-      context: .
+      context: ../../api_gateway
       dockerfile: Dockerfile.dev
     image: api_gateway:development
     container_name: api-gateway
@@ -34,11 +35,17 @@ services:
       - ACCESS_SECRET=${ACCESS_SECRET}
       - REFRESH_SECRET=${REFRESH_SECRET}
       - DB_CONNECTION=mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongo-database:27017/${MONGO_DATABASE}?authSource=admin
+      - USERVER_RPS_CCONTROL_ENABLED=false
     depends_on:
       mongo-database:
         condition: service_healthy
     networks:
       - property_service_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 networks:
   property_service_network:

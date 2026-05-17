@@ -95,7 +95,7 @@ components_manager:
         login-handler:
             path: /api/v1/auth/login
             method: POST
-            max_requests: 1
+            max_requests: 1000
             window_size: 5
             limiter_key: login-handler
 
@@ -177,3 +177,9 @@ components_manager:
             method: GET
             fs-cache-component: fs-cache-main
             directory-file: index.html
+
+        handler-ping:
+            path: /ping
+            method: GET
+            task_processor: main-task-processor
+            throttling_enabled: false

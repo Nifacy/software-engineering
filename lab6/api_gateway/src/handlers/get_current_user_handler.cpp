@@ -15,9 +15,13 @@ GetCurrentUserHandler::GetCurrentUserHandler(
 common::Response GetCurrentUserHandler::HandleRequestImpl(
     const userver::server::http::HttpRequest&,
     userver::server::request::RequestContext& request_context) const {
+  LOG_INFO() << "Retrieve user ID ...";
   const auto user_id = request_context.GetData<boost::uuids::uuid>("user_id");
+
+  LOG_INFO() << "Get user from storage ...";
   const auto user = user_storage_.GetUser(user_id);
 
+  LOG_INFO() << "Build response ...";
   return common::Response(userver::http::StatusCode::OK,
                           api_gateway::schemas::user::UserInfo{
                               .id = userver::utils::ToString(user_id),

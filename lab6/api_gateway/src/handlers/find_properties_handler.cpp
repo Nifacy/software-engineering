@@ -25,7 +25,7 @@ FindPropertiesHandler::FindPropertiesHandler(
 
 std::optional<int> FindPropertiesHandler::TryGetIntArg(
     const userver::server::http::HttpRequest& request,
-    const std::string& arg_name) const {
+    const std::string& arg_name, const std::optional<int> minimum) const {
   const auto maybe_value = TryGetArg(request, arg_name);
   if (!maybe_value.has_value()) {
     return std::nullopt;
@@ -34,7 +34,17 @@ std::optional<int> FindPropertiesHandler::TryGetIntArg(
   const std::string value = *maybe_value;
 
   try {
-    return std::stoi(value);
+    const auto parsedValue = std::stoi(value);
+
+    if (minimum.has_value() && parsedValue < minimum.value()) {
+      throw common::HttpError(userver::http::StatusCode::BadRequest,
+                              "Value for argument '" + arg_name +
+                                  "' must be not lower than " +
+                                  std::to_string(minimum.value()));
+    }
+
+    return parsedValue;
+
   } catch (const std::exception& e) {
     throw common::HttpError(
         userver::http::StatusCode::BadRequest,
@@ -58,8 +68,8 @@ common::Response FindPropertiesHandler::HandleRequestImpl(
     userver::server::request::RequestContext&) const {
   const auto property_ids = FindProperties({
       .city_pattern = TryGetArg(request, "city"),
-      .min_price = TryGetIntArg(request, "minPrice"),
-      .max_price = TryGetIntArg(request, "maxPrice"),
+      .min_price = TryGetIntArg(request, "minPrice", 0),
+      .max_price = TryGetIntArg(request, "maxPrice", 0),
   });
 
   return common::Response(
