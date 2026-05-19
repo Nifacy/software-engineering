@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.13.7-management-alpine
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    environment:
+      RABBITMQ_DEFAULT_USER: testuser
+      RABBITMQ_DEFAULT_PASS: testuser
+    networks:
+      - document_indexer_network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.43.1
+    ports:
+      - "7700:7700"
+    environment:
+      MEILI_MASTER_KEY: MASTER_KEY
+    networks:
+      - document_indexer_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7700/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  document-indexer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: document-indexer:development
+    volumes:
+      - ./app.config.yml:/app/config.yml:ro
+    environment:
+      MEILISEARCH_URL: http://meilisearch:7700
+      MEILISEARCH_API_KEY: MASTER_KEY
+      RMQ_CONNECTION_URL: amqp://testuser:testuser@rabbitmq:5672
+    depends_on:
+      meilisearch:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - document_indexer_network
+
+networks:
+  document_indexer_network:
+    driver: bridge
