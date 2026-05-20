@@ -7,6 +7,7 @@ import meilisearch
 from . import _config
 from . import _document_indexer
 from . import _document_schema
+from . import _event_publisher
 from . import _handlers
 
 
@@ -46,32 +47,47 @@ async def _create_document_indexer(
 
 def _create_broker(
     app_config: _config.AppConfiguration,
-    indexer: _document_indexer.DocumentIndexer,
 ) -> faststream.rabbit.RabbitBroker:
-    broker = faststream.rabbit.RabbitBroker(
+    return faststream.rabbit.RabbitBroker(
         url=app_config.rmq_connection_url,
         timeout=60.0,
         fail_fast=False,
     )
 
-    broker.include_router(
-        faststream.rabbit.RabbitRouter(
-            handlers=(
-                faststream.rabbit.RabbitRoute(
-                    call=_handlers.index_document(indexer),
-                    queue=f"document_indexer-{app_config.pool_name}",
-                ),
-            )
-        )
+
+def _create_event_publisher(
+    broker: faststream.rabbit.RabbitBroker,
+    app_config: _config.AppConfiguration,
+) -> _event_publisher.EventPublisher:
+    return _event_publisher.EventPublisher(
+        broker=broker,
+        pool_name=app_config.pool_name,
     )
 
-    return broker
+
+def _create_router(
+    app_config: _config.AppConfiguration,
+    event_publisher: _event_publisher.EventPublisher,
+    indexer: _document_indexer.DocumentIndexer,
+) -> faststream.rabbit.RabbitRouter:
+    return faststream.rabbit.RabbitRouter(
+        handlers=(
+            faststream.rabbit.RabbitRoute(
+                call=_handlers.index_document(indexer, event_publisher),
+                queue=f"document_indexer-{app_config.pool_name}",
+            ),
+        )
+    )
 
 
 async def create_app(config: Path) -> faststream.FastStream:
     app_config = _config.parse_config(config)
+    broker = _create_broker(app_config)
     document_indexer = await _create_document_indexer(app_config)
-    broker = _create_broker(app_config, document_indexer)
-    app = faststream.FastStream(broker)
+    event_publisher = _create_event_publisher(broker, app_config)
+    router = _create_router(app_config, event_publisher, document_indexer)
+
+    broker.include_router(router)
+    app = faststream.FastStream(broker, after_startup=[event_publisher.async_init])
 
     return app

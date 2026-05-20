@@ -5,6 +5,7 @@ description = "Service for searching indexes documents"
 readme = "README.md"
 requires-python = "~=3.14.0"
 dependencies = [
+    "faststream[rabbit]==0.6.7",
     "litestar[standard]==2.22.0",
     "meilisearch==0.41.0",
     "pydantic==2.13.4",

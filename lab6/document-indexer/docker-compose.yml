@@ -60,6 +60,8 @@ services:
     environment:
       MEILISEARCH_URL: http://meilisearch:7700
       MEILISEARCH_API_KEY: MASTER_KEY
+      RMQ_CONNECTION_URL: amqp://testuser:testuser@rabbitmq:5672
+      POOL_NAME: test
       PORT: "8080"
       INDEX_NAME: test-index
     depends_on:

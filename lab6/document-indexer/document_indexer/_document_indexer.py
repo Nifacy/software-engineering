@@ -11,7 +11,7 @@ import meilisearch.index
 from . import _document_schema
 
 type RawData = dict[str, object]
-type DocumentIndexer = Callable[[RawData], Awaitable[None]]
+type DocumentIndexer = Callable[[RawData], Awaitable[_document_schema.Document]]
 
 
 @dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
@@ -31,9 +31,10 @@ async def create_document_indexer(
         (field.name for field in schema.fields if _is_filterable(field)),
     )
 
-    async def indexer(raw_data: RawData) -> None:
+    async def indexer(raw_data: RawData) -> _document_schema.Document:
         document = schema.validate_document(raw_data)
         await _create_document(index, document)
+        return document
 
     return indexer
 

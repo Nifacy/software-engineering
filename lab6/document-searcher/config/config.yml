@@ -1,0 +1,8 @@
+pool_name: test
+document_schema:
+  foo:
+    type: text
+  bar:
+    type: integer
+    filterable: true
+index_name: test-index

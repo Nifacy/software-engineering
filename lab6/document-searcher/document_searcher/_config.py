@@ -17,6 +17,8 @@ class AppConfiguration(pydantic_settings.BaseSettings):
     host: str = "127.0.0.1"
     meilisearch: MeiliSearchConfig = pydantic.Field(default_factory=MeiliSearchConfig)
     index_name: str
+    pool_name: str
+    rmq_connection_url: str
 
 
 def load_from_config_file(path: Path) -> AppConfiguration:
