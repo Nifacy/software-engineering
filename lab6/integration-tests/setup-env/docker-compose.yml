@@ -22,6 +22,36 @@ services:
       timeout: 5s
       retries: 5
 
+  rabbitmq:
+    image: rabbitmq:3.13.7-management-alpine
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    environment:
+      RABBITMQ_DEFAULT_USER: testuser
+      RABBITMQ_DEFAULT_PASS: testuser
+    networks:
+      - property_service_network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.43.1
+    ports:
+      - "7700:7700"
+    environment:
+      MEILI_MASTER_KEY: MASTER_KEY
+    networks:
+      - property_service_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7700/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   api_gateway:
     build:
       context: ../../api_gateway
@@ -46,6 +76,88 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  property-indexer:
+    build:
+      context: ../../document-indexer
+      dockerfile: Dockerfile
+    image: document-indexer:development
+    volumes:
+      - ./property-indexer-config:/app/config:ro
+    environment:
+      MEILISEARCH_URL: http://meilisearch:7700
+      MEILISEARCH_API_KEY: MASTER_KEY
+      RMQ_CONNECTION_URL: amqp://testuser:testuser@rabbitmq:5672
+    depends_on:
+      meilisearch:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - property_service_network
+
+  user-indexer:
+    build:
+      context: ../../document-indexer
+      dockerfile: Dockerfile
+    image: document-indexer:development
+    volumes:
+      - ./user-indexer-config:/app/config:ro
+    environment:
+      MEILISEARCH_URL: http://meilisearch:7700
+      MEILISEARCH_API_KEY: MASTER_KEY
+      RMQ_CONNECTION_URL: amqp://testuser:testuser@rabbitmq:5672
+    depends_on:
+      meilisearch:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - property_service_network
+
+  property-searcher:
+    build:
+      context: ../../document-searcher
+      dockerfile: Dockerfile
+    image: document-searcher:development
+    ports:
+      - "8080:8080"
+    environment:
+      MEILISEARCH_URL: http://meilisearch:7700
+      MEILISEARCH_API_KEY: MASTER_KEY
+      RMQ_CONNECTION_URL: amqp://testuser:testuser@rabbitmq:5672
+      POOL_NAME: properties
+      PORT: "8080"
+      INDEX_NAME: properties-index
+    depends_on:
+      meilisearch:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - property_service_network
+
+  user-searcher:
+    build:
+      context: ../../document-searcher
+      dockerfile: Dockerfile
+    image: document-searcher:development
+    ports:
+      - "8080:8080"
+    environment:
+      MEILISEARCH_URL: http://meilisearch:7700
+      MEILISEARCH_API_KEY: MASTER_KEY
+      RMQ_CONNECTION_URL: amqp://testuser:testuser@rabbitmq:5672
+      POOL_NAME: users
+      PORT: "8080"
+      INDEX_NAME: users-index
+    depends_on:
+      meilisearch:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - property_service_network
 
 networks:
   property_service_network:

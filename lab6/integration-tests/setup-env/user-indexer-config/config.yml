@@ -1,0 +1,9 @@
+pool_name: users
+document_schema:
+  first_name:
+    type: text
+  last_name:
+    type: text
+  login:
+    type: text
+index_name: users-index

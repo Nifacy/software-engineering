@@ -1,0 +1,8 @@
+pool_name: poroperties
+document_schema:
+  city:
+    type: text
+  price:
+    type: integer
+    filterable: true
+index_name: properties-index
