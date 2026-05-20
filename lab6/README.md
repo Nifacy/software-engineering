@@ -6,5 +6,6 @@
 
 ## Структура проекта
 
-- [`performance_design.md`](./performance_design.md) - описание стратегии кеширования и rate limiting.
-- [`api_gateway`](./api_gateway/) - проект из Лабораторной работы №2 с добавленной MongoDB базой данных.
+- [`event_driven_design.md`](./event_driven_design.md) - описание Event-Driven архитектуры.
+- [`document-indexer`](./document-indexer/) - сервис для индексации документов в Meilisearch.
+- [`document-searcher`](./document-searcher/) - сервис для поиска документов в индексе Meilisearch.
