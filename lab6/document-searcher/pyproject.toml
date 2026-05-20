@@ -1,0 +1,26 @@
+[project]
+name = "document-searcher"
+version = "0.0.1"
+description = "Service for searching indexes documents"
+readme = "README.md"
+requires-python = "~=3.14.0"
+dependencies = [
+    "litestar[standard]==2.22.0",
+    "meilisearch==0.41.0",
+    "pydantic==2.13.4",
+    "pydantic-settings==2.14.1",
+    "pyyaml==6.0.3",
+    "typer==0.25.1",
+]
+
+[dependency-groups]
+dev = [
+    "ruff==0.15.13",
+]
+
+
+[tool.ruff.lint]
+select = ["I"]
+
+[tool.ruff.lint.isort]
+force-single-line = true

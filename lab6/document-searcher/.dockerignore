@@ -1,5 +1,5 @@
 .venv/
 .vscode/
+.gitignore
 Dockerfile
-README.md
 **/__pycache__

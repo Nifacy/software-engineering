@@ -37,7 +37,7 @@ services:
       dockerfile: Dockerfile
     image: document-indexer:development
     volumes:
-      - ./app.config.yml:/app/config.yml:ro
+      - ../document-searcher/config:/app/config:ro
     environment:
       MEILISEARCH_URL: http://meilisearch:7700
       MEILISEARCH_API_KEY: MASTER_KEY
@@ -46,6 +46,24 @@ services:
       meilisearch:
         condition: service_healthy
       rabbitmq:
+        condition: service_healthy
+    networks:
+      - document_indexer_network
+
+  document-searcher:
+    build:
+      context: ../document-searcher
+      dockerfile: Dockerfile
+    image: document-searcher:development
+    ports:
+      - "8080:8080"
+    environment:
+      MEILISEARCH_URL: http://meilisearch:7700
+      MEILISEARCH_API_KEY: MASTER_KEY
+      PORT: "8080"
+      INDEX_NAME: test-index
+    depends_on:
+      meilisearch:
         condition: service_healthy
     networks:
       - document_indexer_network

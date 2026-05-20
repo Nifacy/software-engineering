@@ -9,6 +9,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 FROM python:3.14.5-slim
 WORKDIR /app
 COPY --from=builder /app/.venv /app/.venv
-COPY document_indexer /app/document_indexer
+COPY document_searcher /app/document_searcher
 ENV PATH="/app/.venv/bin:$PATH"
-CMD ["python", "-m", "document_indexer", "--config", "/app/config/config.yml"]
+ENV HOST="0.0.0.0"
+CMD ["python", "-m", "document_searcher", "--config", "/app/config.yml"]
